@@ -15,18 +15,21 @@ fig.suptitle("Solar Position Estimation in " + site.name +' '+ chosen_date)
 ax1.plot(solpos.loc[chosen_date].zenith)
 ax1.set_ylabel("Solar zenith angle (degree)")
 ax1.set_xlabel("Time (hour)")
+ax1.grid()
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H"))
 
 # Plot for solar azimuth angle
 ax2.plot(solpos.loc[chosen_date].azimuth)
 ax2.set_ylabel("Solar azimuth angle (degree)")
 ax2.set_xlabel("Time (hour)")
+ax2.grid()
 ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H"))
 
 # Plot for solar elevation angle
 ax3.plot(solpos.loc[chosen_date].elevation)
 ax3.set_ylabel("Solar elevation angle (degree)")
 ax3.set_xlabel("Time (hour)")
+ax3.grid()
 ax3.xaxis.set_major_formatter(mdates.DateFormatter("%H"))
 
 # Add points at sunrise and sunset
@@ -53,4 +56,5 @@ plt.show()
 
 
 # Leg
-solpos.loc[chosen_date].elevation['2024-04-10 06:23:00+02:00']
+# solpos.loc[chosen_date].elevation['2024-04-10 06:23:00+02:00']
+
