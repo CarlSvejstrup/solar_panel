@@ -1,3 +1,5 @@
+#Funktion der kan finder begge nulpunkterne af f.
+
 import numpy as np
 
 def bisect(t_min,t_max,f,delta):
