@@ -4,13 +4,15 @@ import numpy as np
 # zenit = theta
 # azimuth =phi
 
+
 def solar_elevation_angle(theta):
-    return 90-theta
+    return 90 - theta
+
 
 """Antag at solen har en fast afstand til jorden. Find en rimelig værdi for.
 Angiv et (matematisk) udtryk for hvordan solens-koordinat kan udregnes ud fra,
 og, hvor og er hhv. zenit og azimut-vinklen for solens placering."""
-r_s = 100_000_000_000 # afstand fra jorden til solen i meter
+r_s = 100_000_000_000  # afstand fra jorden til solen i meter
 theta_s, phi_s = sp.symbols("theta_s, phi_s")
 x_s = sp.cos(phi_s) * sp.sin(theta_s)
 y_s = sp.sin(phi_s) * sp.sin(theta_s)
@@ -23,7 +25,7 @@ theta_p, phi_p = sp.symbols("theta_s, phi_s")
 x_p = sp.cos(phi_p) * sp.sin(theta_p)
 y_p = sp.sin(phi_p) * sp.sin(theta_p)
 z_p = sp.cos(theta_p)
-u_p = sp.Matrix([x_p,y_p,z_p])
+u_p = sp.Matrix([x_p, y_p, z_p])
 
 """x = -sp.cos(phi_s) * sp.sin(theta_s)
 y = -sp.sin(phi_s) * sp.sin(theta_s)
@@ -32,7 +34,9 @@ u_s = sp.Matrix(x,y,z)
 u_s = sp.Matrix(x,y,z) * 1/sp.sqrt(u_s.T @ u_s) # normalizere vectoren
 """
 
-Inner_u_p_and_u_s = -sp.sin(theta_p)*sp.sin(theta_s)*sp.cos(phi_p-phi_s) - sp.cos(theta_p) * sp.cos(theta_s)
+Inner_u_p_and_u_s = -sp.sin(theta_p) * sp.sin(theta_s) * sp.cos(phi_p - phi_s) - sp.cos(
+    theta_p
+) * sp.cos(theta_s)
 """"
 u_p og u_s begge har længden 1, når du finder inder produktet finder man abselut værdien længden af den ene projekteret ind på den anden
 i anden. 
@@ -48,11 +52,16 @@ Hvis <u_p, u_s> er 0 betyder det de to vecore er vinkelrette på hindanden og de
 Skriv en Python-funktion def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel) der returnerer 
 <n_s, n_p> når det er positivt og ellers returnerer nul.
 """
-def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
-    inner = sp.sin(theta_panel)*sp.sin(theta_sol)*sp.cos(phi_panel-phi_sol) + sp.cos(theta_panel) * sp.cos(theta_sol)
+
+
+def solar_panel_projection_single(theta_sol, phi_sol, theta_panel, phi_panel):
+    inner = sp.sin(theta_panel) * sp.sin(theta_sol) * sp.cos(
+        phi_panel - phi_sol
+    ) + sp.cos(theta_panel) * sp.cos(theta_sol)
     if inner > 0:
         return inner
     return inner
+
 
 """ig igen på jeres Python-funktion def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel).
 Skriv den om så den virker på NumPy-arrays af zenit- og azimut-vinkler.
@@ -61,19 +70,24 @@ hvor projektionen bør give 0.707107, 0.0 og 0.0 (eller rettere,
 med numeriske fejl, bør det give array([7.07106781e-01, 6.12323400e-17, 0.0])).
 Forklar solpanelets orientering og solens placering i de tre situationer."""
 
+
 def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
     inner = np.zeros(theta_sol.size)
-    for i, (theta_s, phi_s, theta_p, phi_p) in enumerate(zip(theta_sol, phi_sol, theta_panel, phi_panel)):
-        temp = sp.sin(theta_p)*sp.sin(theta_s)*sp.cos(phi_p-phi_s) + sp.cos(theta_p) * sp.cos(theta_s)
+    for i, (theta_s, phi_s, theta_p, phi_p) in enumerate(
+        zip(theta_sol, phi_sol, theta_panel, phi_panel)
+    ):
+        temp = sp.sin(theta_p) * sp.sin(theta_s) * sp.cos(phi_p - phi_s) + sp.cos(
+            theta_p
+        ) * sp.cos(theta_s)
         if temp > 0:
             inner[i] = temp
     return inner
+
+
 theta_sol = np.array([np.pi / 4, np.pi / 2, 0.0])
 phi_sol = np.array([np.pi, np.pi / 2, 0.0])
 theta_panel = np.array([0.0, np.pi / 2, np.pi])
 phi_panel = np.array([np.pi, 0.0, 0.0])
-
-print(solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel))
 
 
 # to sidste opgave i Solpositionsmodellering ved Pvlib
@@ -86,16 +100,23 @@ pvlib.solarposition.nrel_earthsun_distance(times) * 149597870700,
 hvor 149597870700 er antal meter på en astronomisk enhed AU.
 """
 
-def angle_to_coords(theta_s, phi_s, r_s = 100_000_000_000):
+
+def angle_to_coords(theta_s, phi_s, r_s=100_000_000_000):
     x_s = sp.cos(phi_s) * sp.sin(theta_s)
     y_s = sp.sin(phi_s) * sp.sin(theta_s)
     z_s = sp.cos(theta_s)
     return x_s * r_s, y_s * r_s, z_s * r_s
+
 
 """
 Skriv en Python funktion der omregner fra solens position på himlen i et 
  koordinater til zenit og azimuth (i grader eller radianer). Her kan np.arctan2(y, x) og np.rad2deg() være nyttige.
 """
 
-def coords_to_angle(x,y,z):
+
+def coords_to_angle(x, y, z):
     return sp.acos(z), sp.atan2(y, x)
+
+
+if __name__ == "__main__":
+    print(solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel))
