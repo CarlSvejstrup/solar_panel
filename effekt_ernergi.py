@@ -7,14 +7,14 @@ from Koordinatsystem import *
 from scipy import integrate
 
 
-def data_load(type, date="2024-04-20"):
-    if type:
+def data_load(time_interval, date="2024-04-20"):
+    if time_interval == 'yearly'
         tidszone = "Europe/Copenhagen"
         start_dato = "2024-01-01"
         slut_dato = "2025-12-31"
         delta_tid = "h"
 
-    else:
+    elif time_interval == 'daily'
         tidszone = "Europe/Copenhagen"
         start_dato = date
         slut_dato = date
@@ -38,15 +38,15 @@ def data_load(type, date="2024-04-20"):
     solpos = site.get_solarposition(times)
 
     # Convert angles to radians and extract angles into np.array
-    angles = np.deg2rad(solpos[["zenith", "azimuth"]].to_numpy())
+    solpos_angles = np.deg2rad(solpos[["zenith", "azimuth"]].to_numpy())
 
     # Create a mask for specifik angle
-    mask = angles[:, 0] < np.pi / 2
-    angles = angles[mask, :]
+    mask = solpos_angles[:, 0] < np.pi / 2
+    solpos_angles = solpos_angles[mask, :]
     # Apply to time aswell
     times = times[mask]
 
-    return angles, times
+    return solpos_angles, times
 
 
 def flux(
@@ -62,8 +62,8 @@ def flux(
     m, n = angles_s.shape
 
     # creating full arrays
-    theta_p_full = np.full((m,), theta_p)
-    phi_p_full = np.full((m,), phi_p)
+    theta_panel_full = np.full((m,), theta_p)
+    phi_panel_full = np.full((m,), phi_p)
 
     # Extracting the specfik dimensions of panel plane
     a1, b1 = panel_dim[0]
@@ -72,63 +72,63 @@ def flux(
     # F = np.empty(m)
 
     # Returning a list of projections of normalvecktors u_s and u_p
-    u_sp = solar_panel_projection(
-        angles_s[:, 0], angles_s[:, 1], theta_p_full, phi_p_full
+    normal_vector_projection = solar_panel_projection(
+        angles_s[:, 0], angles_s[:, 1], theta_panel_full, phi_panel_full
     )
     # for i in range(m):
     # F[i] = sp.integrate((u_sp[i] * S_0), (u, a1, b1), (v, a2, b2))
     # Dividing by 1000 to convert from W/m^2 to kW/m^2
-    F = (u_sp * S_0 * (b1 - a1) * (b2 - a2)) / 1_000
-    return F
+    flux_solar = (normal_vector_projection * S_0 * (b1 - a1) * (b2 - a2)) / 1_000
+    return flux_solar
 
 
 def test(angels, phi_p, theta_p, panel_dim, S_0, int_):
-    int_values = np.empty(len(phi_p))
+    integral_values = np.empty(len(phi_p))
     for i in range(len(phi_p)):
         F = flux(angels, theta_p[i], phi_p[i], panel_dim, S_0)
 
         # Only for dayly simulation
         if int_ == 60:
             # Dividing by number of hours in a day to get the KWh/m^2
-            int_values[i] = integrate.simps(F, dx=int_) / (60 * 60 * 24)
+            integral_values[i] = integrate.simps(F, dx=int_) / (60 * 60 * 24)
         else:
             # Dividing by number of hours in the period to get the KWh/m^2
-            int_values[i] = integrate.simps(F, dx=int_) / (60 * 60 * angels.shape[0])
-    max_index = np.argmax(int_values)
-    min_index = np.argmin(int_values)
-    return int_values, max_index, min_index
+            integral_values[i] = integrate.simps(F, dx=int_) / (60 * 60 * angels.shape[0])
+    max_index = np.argmax(integral_values)
+    min_index = np.argmin(integral_values)
+    return integral_values, max_index, min_index
 
 
 # array of phi values including the max and min index
-phi = np.linspace(np.pi, np.pi, 91)
+phi_panel = np.linspace(np.pi, np.pi, 91)
 
 # Array of theta values in radians from 0 to 90 degrees
-theta = np.radians(np.arange(0, 91, 1))
+theta_panel = np.radians(np.arange(0, 91, 1))
 
 # Check if the simulation is yearly or hourly
-yearly = True
+time_interval = 'yearly'
 
 # load data
-angles, time = data_load(type=yearly)
+sun_angles, time = data_load(type=time_interval == 'yearly')
 
-m, n = angles.shape
+m, n = sun_angles.shape
 
 # Integral period based on yearly or hourly simulation
-if yearly:
-    period = 3600
-else:
-    period = 60
+if time_interval == 'yearly':
+    period_seconds = 3600
+elif time_interval == 'daily':
+    period_seconds = 60
 
 # Defining the panel dimensions
-panel_dimensions = ((0, 4), (0, 5))
+panel_dimensions = ((0, 1), (0, 2))
 S_0 = 1_100
 
-F_t, max_index, min_index = test(angles, phi, theta, panel_dimensions, S_0, int_=period)
+flux_total_arr, max_index, min_index = test(sun_angles, phi_panel, theta_panel, panel_dimensions, S_0, int_=period_seconds)
 
 
-theta_max = theta[max_index]
-theta_min = theta[min_index]
+theta_max = theta_panel[max_index]
+theta_min = theta_panel[min_index]
 
 # print(F_t)
-print(f"Max value: {F_t[max_index]} at theta = {np.rad2deg(theta_max)} degrees")
-print(f"Min value: {F_t[min_index]} at theta = {np.rad2deg(theta_min)} degrees")
+print(f"Max value: {flux_total_arr[max_index]} at theta = {np.rad2deg(theta_max)} degrees")
+print(f"Min value: {flux_total_arr[min_index]} at theta = {np.rad2deg(theta_min)} degrees")
