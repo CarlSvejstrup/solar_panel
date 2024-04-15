@@ -11,7 +11,7 @@ def data_load(time_interval, date="2024-04-20"):
     if time_interval == "year":
         tidszone = "Europe/Copenhagen"
         start_dato = "2024-01-01"
-        slut_dato = "2024-12-31"
+        slut_dato = "2024-01-20"
         delta_tid = "h"
 
     elif time_interval == "day":
@@ -42,9 +42,13 @@ def data_load(time_interval, date="2024-04-20"):
 
     # Create a mask for specifik angle
     mask = solpos_angles[:, 0] < np.pi / 2
-    solpos_angles = solpos_angles[mask, :]
+    solpos_angles_test = solpos_angles[mask, :]
+    print(solpos_angles_test)
+    solpos = np.where(solpos_angles[:, 0] < np.pi / 2, solpos_angles[:, 0], 0)
+    print(solpos)
+
     # Apply to time aswell
-    times = times[mask]
+    # times = times[mask]
 
     return solpos_angles, times
 
@@ -123,18 +127,18 @@ panel_dimensions = (1, 2)
 S_0 = 1_000
 A_0 = 0.5
 
-flux_total_arr, max_index, min_index = test(
-    sun_angles, phi_panel, theta_panel, panel_dimensions, S_0, A_0, int_=period_seconds
-)
+# flux_total_arr, max_index, min_index = test(
+#     sun_angles, phi_panel, theta_panel, panel_dimensions, S_0, A_0, int_=period_seconds
+# )
 
 
-theta_max = theta_panel[max_index]
-theta_min = theta_panel[min_index]
+# theta_max = theta_panel[max_index]
+# theta_min = theta_panel[min_index]
 
-# print(F_t)
-print(
-    f"Max value: {flux_total_arr[max_index]:.3f} kWh, at theta = {np.rad2deg(theta_max)} degrees"
-)
-print(
-    f"Min value: {flux_total_arr[min_index]:.3f} kWh, at theta = {np.rad2deg(theta_min)} degrees"
-)
+# # print(F_t)
+# print(
+#     f"Max value: {flux_total_arr[max_index]:.3f} kWh, at theta = {np.rad2deg(theta_max)} degrees"
+# )
+# print(
+#     f"Min value: {flux_total_arr[min_index]:.3f} kWh, at theta = {np.rad2deg(theta_min)} degrees"
+# )
