@@ -11,7 +11,7 @@ def data_load(time_interval, date="2024-04-20"):
     if time_interval == "year":
         tidszone = "Europe/Copenhagen"
         start_dato = "2024-01-01"
-        slut_dato = "2024-02-29"
+        slut_dato = "2024-12-31"
         delta_tid = "h"
 
     elif time_interval == "day":
@@ -73,6 +73,7 @@ def flux(angles_s, theta_p: float, phi_p: float, panel_dim: tuple, S_0: int, A_0
     # F[i] = sp.integrate((u_sp[i] * S_0), (u, a1, b1), (v, a2, b2))
     # Convert from W/m^2 to kW
     flux_solar = (normal_vector_projection * (S_0 * A_0) * (Length * Width)) / 1_000
+    print(flux_solar.shape[0])
     return flux_solar
 
 
