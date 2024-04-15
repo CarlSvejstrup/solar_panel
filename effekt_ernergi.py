@@ -13,13 +13,13 @@ def data_load(
 
     if time_interval == "year":
         start_dato = "2024-01-01"
-        slut_dato = "2024-12-31"
+        slut_dato = "2024-02-20"
         delta_tid = "h"
 
     elif time_interval == "day":
         start_dato = date
         slut_dato = date
-        delta_tid = "h"
+        delta_tid = "min"
 
     # Definition of Location object. Coordinates and elevation of Amager, Copenhagen (Denmark)
     site = Location(
@@ -112,7 +112,7 @@ def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
 
 
 # Check if the simulation is yearly or hourly
-time_interval = "day"
+time_interval = "year"
 
 # Coordinates for building 101 on DTU Lyngby Campus
 latitude = 55.786050  # Breddegrad
