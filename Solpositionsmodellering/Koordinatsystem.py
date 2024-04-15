@@ -19,7 +19,7 @@ coordinates_s = (x_s * r_s, y_s * r_s, z_s * r_s)
 """Angiv et (matematisk) udtryk u_p for og for <u_p,u_s> ud fra zenit- og azimut-vinklerne.
 I bør simplificere udtrykket så det indeholder og kun 5 trigonometriske funktioner.
 Vis at. Forklar man egne ord hvad det betyder når."""
-theta_p, phi_p = sp.symbols("theta_s, phi_s")
+theta_p, phi_p = sp.symbols("theta_p, phi_p")
 x_p = sp.cos(phi_p) * sp.sin(theta_p)
 y_p = sp.sin(phi_p) * sp.sin(theta_p)
 z_p = sp.cos(theta_p)
@@ -50,9 +50,7 @@ Skriv en Python-funktion def solar_panel_projection(theta_sol, phi_sol, theta_pa
 """
 def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
     inner = sp.sin(theta_panel)*sp.sin(theta_sol)*sp.cos(phi_panel-phi_sol) + sp.cos(theta_panel) * sp.cos(theta_sol)
-    if inner > 0:
-        return inner
-    return inner
+    return max([inner, 0])
 
 """ig igen på jeres Python-funktion def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel).
 Skriv den om så den virker på NumPy-arrays af zenit- og azimut-vinkler.
