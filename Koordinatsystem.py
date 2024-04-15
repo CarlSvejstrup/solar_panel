@@ -84,10 +84,10 @@ def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
     return inner
 
 
-theta_sol = np.array([np.pi / 4, np.pi / 2, 0.0])
-phi_sol = np.array([np.pi, np.pi / 2, 0.0])
-theta_panel = np.array([0.0, np.pi / 2, np.pi])
-phi_panel = np.array([np.pi, 0.0, 0.0])
+theta_sol = np.array([np.pi / 4, np.pi / 2, 0.0, np.pi / 4, np.pi / 4, np.pi / 4])
+phi_sol = np.array([np.pi, np.pi / 2, 0.0, np.pi, np.pi, np.pi])
+theta_panel = np.array([0.0, np.pi / 2, np.pi, np.pi / 4, np.pi / 4, np.pi / 4])
+phi_panel = np.array([np.pi, 0.0, 0.0, 0.0, np.pi, np.pi / 4])
 
 
 # to sidste opgave i Solpositionsmodellering ved Pvlib
