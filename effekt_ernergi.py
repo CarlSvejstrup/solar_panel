@@ -19,7 +19,7 @@ def data_load(
     elif time_interval == "day":
         start_dato = date
         slut_dato = date
-        delta_tid = "min"
+        delta_tid = "h"
 
     # Definition of Location object. Coordinates and elevation of Amager, Copenhagen (Denmark)
     site = Location(
@@ -142,7 +142,9 @@ theta_panel = np.radians(np.arange(0, 91, 1))
 
 
 # Defining the panel dimensions i meters
-panel_dimensions = 2
+Længde = 2.278  # længde på solpanel
+Bredde = 1.133  # bredde på solpanel
+panel_areal = Længde * Bredde
 
 S_0 = 1_100  # Samlede stråling (irradians)
 A_0 = 0.5  # Atmotfæriske forstyrrelser
@@ -153,7 +155,7 @@ flux_total_arr, flux_vs_best_angle, max_index, min_index = test(
     sun_angles,
     phi_panel,
     theta_panel,
-    panel_dimensions,
+    panel_areal,
     S_0,
     A_0,
     W_p,
