@@ -5,10 +5,10 @@ from coordinates import *
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 
-chosen_date = "2024-04-10"
+chosen_date = "2024-04-20"
 
 # Plots for solar zenith and solar azimuth angles
-fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 8))
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(13, 4))
 fig.suptitle("Solar Position Estimation in " + site.name +' '+ chosen_date)
 
 # Plot for solar zenith angle
@@ -33,14 +33,14 @@ ax3.grid()
 ax3.xaxis.set_major_formatter(mdates.DateFormatter("%H"))
 
 # Add points at sunrise and sunset
-sunrise_x = pd.to_datetime('2024-04-10 06:23:00+02:00' )
-sunset_x = pd.to_datetime('2024-04-10 20:01:00+02:00')
-ax3.plot(sunrise_x, solpos.loc[chosen_date].elevation[sunrise_x], 'ko' , label='Sunrise: 06:23')
-ax3.plot(sunset_x, solpos.loc[chosen_date].elevation[sunset_x], 'ko', label='Sunset: 20:01')
-ax2.plot(sunrise_x, solpos.loc[chosen_date].azimuth[sunrise_x], 'ko',label='Sunrise: 06:23')
-ax2.plot(sunset_x, solpos.loc[chosen_date].azimuth[sunset_x], 'ko', label='Sunset: 20:01')
-ax1.plot(sunrise_x, solpos.loc[chosen_date].zenith[sunrise_x], 'ko',label='Sunrise: 06:23')
-ax1.plot(sunset_x, solpos.loc[chosen_date].zenith[sunset_x], 'ko', label='Sunset: 20:01')
+sunrise_x = pd.to_datetime('2024-04-20 05:58:00+02:00' )
+sunset_x = pd.to_datetime('2024-04-20 20:21:00+02:00')
+ax3.plot(sunrise_x, solpos.loc[chosen_date].elevation[sunrise_x], 'ko' , label='Sunrise: 05:58')
+ax3.plot(sunset_x, solpos.loc[chosen_date].elevation[sunset_x], 'ko', label='Sunset: 20:21')
+ax2.plot(sunrise_x, solpos.loc[chosen_date].azimuth[sunrise_x], 'ko',label='Sunrise: 05:58')
+ax2.plot(sunset_x, solpos.loc[chosen_date].azimuth[sunset_x], 'ko', label='Sunset: 20:21')
+ax1.plot(sunrise_x, solpos.loc[chosen_date].zenith[sunrise_x], 'ko',label='Sunrise: 05:58')
+ax1.plot(sunset_x, solpos.loc[chosen_date].zenith[sunset_x], 'ko', label='Sunset: 20:21')
 
 # Add the legend
 ax1.legend()
@@ -49,12 +49,13 @@ ax3.legend()
 
 # Add note
 note = "Note: Add +2 to the x-axis for Danish time"
-fig.text(0.5, 0.025, note, ha='center')
+fig.text(0.5, 1-0.1, note, ha='center')
 
 # Display the plot
+plt.savefig('All_3_angles_{}'.format(chosen_date))
 plt.show()
 
 
 # Leg
-# solpos.loc[chosen_date].elevation['2024-04-10 06:23:00+02:00']
+solpos.loc[chosen_date].elevation['2024-04-20 20:21:00+02:00']
 
