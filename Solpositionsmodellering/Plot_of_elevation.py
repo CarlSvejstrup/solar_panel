@@ -47,7 +47,6 @@ plt.show()
 # When the elevation angle is less than 0 degrees, the sun is below the horizon (night time).
 # When the elevation angle is 0 degrees, the sun is at the horizon (sunrise or sunset).
 # When the elevation angle is greater than 0 degrees, the sun is above the horizon (day time).
-
 # Explanation of the zenith angle:
 # When the zenith angle is more than 90 degrees, the sun is below the horizon (night time).
 # When the zenith angle is 90 degrees, the sun is at the horizon (sunrise or sunset).
