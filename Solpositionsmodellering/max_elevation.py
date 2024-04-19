@@ -1,4 +1,4 @@
-'''Question 6:
+'''Question:
     Lav en Python-funktion som kan beregne solens højeste punkt 
     på himlen (i grader) på en given dato (year-month-day) i en given
     lokation (fx by) angivet ved en breddegrad og længdegrad.
@@ -55,5 +55,3 @@ def max_elevation(date:str , longitude:float , latitude:float , height = 0):
     max_degree = np.max(elevation_array)
 
     return max_degree
-
-    

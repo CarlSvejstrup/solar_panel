@@ -6,7 +6,7 @@
 
 from coordinates import *
 # Define the date we wish to examine
-chosen_date = "2024-04-10"
+chosen_date = "2024-04-20"
 
 # Convert the elevation to a numpy array
 array_with_elevation = solpos.loc[chosen_date].apparent_elevation.to_numpy()
@@ -29,11 +29,11 @@ print('Calculated sunrise on', chosen_date, ':', sunrise_time)
 print('Calculated Sunset on', chosen_date, ':', sunset_time)
 
 # Compare with www.stjerneskinn.som
-sunset_real = '20:06:00'
-sunrise_real = '06:16:00'
+sunset_real = '20:27:00'
+sunrise_real = '05:51:00'
 
-print('Real sunrise on', chosen_date, ':', sunrise_real)
-print('Real Sunset on', chosen_date, ':', sunset_real)
+print('Real sunrise according to "www.sjerneskinn.com" on', chosen_date, ':', sunrise_real)
+print('Real Sunset according to "www.sjerneskinn.com" on', chosen_date, ':', sunset_real)
 
 # We can see that the differnce on sunrise is 3 minutes and 1 minute on sunset.
 # This is fairly accurate, and the model is working as intended.
