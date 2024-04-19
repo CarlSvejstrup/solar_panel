@@ -84,6 +84,7 @@ def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
     return inner
 
 
+
 theta_sol = np.array([np.pi / 4, np.pi / 2, 0.0, np.pi / 4, np.pi / 4, np.pi / 4])
 phi_sol = np.array([np.pi, np.pi / 2, 0.0, np.pi, np.pi, np.pi])
 theta_panel = np.array([0.0, np.pi / 2, np.pi, np.pi / 4, np.pi / 4, np.pi / 4])
@@ -102,9 +103,9 @@ hvor 149597870700 er antal meter på en astronomisk enhed AU.
 
 
 def angle_to_coords(theta_s, phi_s, r_s=100_000_000_000):
-    x_s = sp.cos(phi_s) * sp.sin(theta_s)
-    y_s = sp.sin(phi_s) * sp.sin(theta_s)
-    z_s = sp.cos(theta_s)
+    x_s = np.cos(phi_s) * np.sin(theta_s)
+    y_s = np.sin(phi_s) * np.sin(theta_s)
+    z_s = np.cos(theta_s)
     return x_s * r_s, y_s * r_s, z_s * r_s
 
 
