@@ -1,6 +1,5 @@
 '''Question 2: Plot solens zenit-, azimut- og elevationsvinkel for hele
     dagen den 20. april 2024 som funktion af tiden.'''
-
 from coordinates import *
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
