@@ -17,13 +17,18 @@ hourly_price = np.array([
     247.38, 340.75, 394.91, 418.27, 385.68, 338.52, 261.14, 249.76
 ])
 
+# Percent fee for selling electricity back to the power grid
+# From https://www.greenmatch.dk/solceller/salg-af-stroem
+electricity_selling_fee = 0.05279
+
+
 def data_load(
     time_interval, latitude, longitude, tidszone, altitude, date="2024-04-20"
 ):
 
     if time_interval == "year":
         start_dato = "2024-01-01"
-        slut_dato = "2024-12-31"
+        slut_dato = "2024-01-31"
         delta_tid = "h"
 
     elif time_interval == "day":
@@ -87,7 +92,6 @@ def flux(
     # Convert from W/m^2 to kW
     flux_solar = (normal_vector_projection * (S_0 * A_0) * W_p * Area) / 1_000
     # print(f"flux {flux_solar}\n")
-    # print(flux_solar.shape[0])
     return flux_solar
 
 
@@ -95,6 +99,8 @@ def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
     # Initialize arrays for the panel_effekt over time and the integral values
     panel_effekt_vs_time = np.empty((angles.shape[0], theta_p.shape[0]))
     integral_values = np.empty(theta_p.shape[0])
+    hourly_expense_total = np.empty((angles.shape[0], theta_p.shape[0]))
+    hourly_expense_natty_total = np.empty((angles.shape[0], theta_p.shape[0]))
 
     # Loop over the theta_p (angles of panel) values
     for i in range(len(theta_p)):
@@ -103,6 +109,22 @@ def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
 
         # Store the flux values for each angle
         panel_effekt_vs_time[:, i] = F
+
+        # Calculating the actual hourly consumption after solar cell usage
+        hourly_expenses_after_solar_cell = np.empty(F.shape[0])
+        hourly_expense_natty = np.empty(F.shape[0])
+        for l in F:
+            l = int(l)
+            j = int(l % 24)
+            hourly_expense = max((hourly_consumption[j] - F[l]), 0) * hourly_price[j]
+            hourly_sales = min((hourly_consumption[j] - F[l]), 0) * hourly_price[j] * electricity_selling_fee * (-1)
+            hourly_expenses_after_solar_cell[l] = hourly_expense - hourly_sales
+
+            hourly_expense_natty[i] = hourly_consumption[j] * hourly_price[j]
+
+        # Store hourly expense values for each angle
+        hourly_expense_total[:, i] = hourly_expenses_after_solar_cell
+        hourly_expense_natty_total[:, i] = hourly_expense_natty
 
         # Integral over time period for each angle
         if int_ == 60:
@@ -115,7 +137,7 @@ def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
 
     max_index = np.argmax(integral_values)
     min_index = np.argmin(integral_values)
-    return integral_values, panel_effekt_vs_time[:, max_index], max_index, min_index
+    return integral_values, panel_effekt_vs_time[:, max_index], max_index, min_index, hourly_expense_total[:, max_index], hourly_expense_natty_total[:, max_index]
 
 
 def energy_per_day(angle_values, theta_p, phi_p, panel_area, S_0, A_0, W_p, int_):
@@ -183,7 +205,7 @@ W_p = 0.211  # Solpanelet effektivitets faktor
 #     sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
 # )
 
-flux_total_arr, flux_vs_best_angle, max_index, min_index = test(
+flux_total_arr, flux_vs_best_angle, max_index, min_index, hourly_expense, hourly_expense_without_solar_cell = test(
     sun_angles,
     phi_panel,
     theta_panel,
@@ -197,6 +219,18 @@ flux_total_arr, flux_vs_best_angle, max_index, min_index = test(
 # Write the flux values for the best angle to a csv file
 flux_df = pd.DataFrame(flux_vs_best_angle, columns=["Flux"])
 flux_df.to_csv("flux_values.csv")
+
+# Write the hourly expenses with flux data for best angle to csv file
+# Create a DataFrame with the provided lists as columns
+column_ID = list(range(1, len(flux_vs_best_angle) + 1))
+data = {
+    "Column ID": column_ID,
+    "flux_vs_best_angle": flux_vs_best_angle,
+    "hourly_expense": hourly_expense,
+    "hourly_expense_without_solar_cell": hourly_expense_without_solar_cell
+}
+df = pd.DataFrame(data)
+df.to_csv("energy_data.csv", index=False)
 
 # Plot the flux values for the best angle
 plt.plot(time, flux_vs_best_angle)
