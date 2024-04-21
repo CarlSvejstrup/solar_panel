@@ -28,7 +28,7 @@ def data_load(
 
     if time_interval == "year":
         start_dato = "2024-01-01"
-        slut_dato = "2024-01-31"
+        slut_dato = "2024-12-31"
         delta_tid = "h"
 
     elif time_interval == "day":
@@ -95,12 +95,12 @@ def flux(
     return flux_solar
 
 
-def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
+def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_, optimizing_for):
     # Initialize arrays for the panel_effekt over time and the integral values
     panel_effekt_vs_time = np.empty((angles.shape[0], theta_p.shape[0]))
     integral_values = np.empty(theta_p.shape[0])
     hourly_expense_total = np.empty((angles.shape[0], theta_p.shape[0]))
-    hourly_expense_natty_total = np.empty((angles.shape[0], theta_p.shape[0]))
+    expense_over_period = np.empty(theta_p.shape[0])
 
     # Loop over the theta_p (angles of panel) values
     for i in range(len(theta_p)):
@@ -112,19 +112,17 @@ def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
 
         # Calculating the actual hourly consumption after solar cell usage
         hourly_expenses_after_solar_cell = np.empty(F.shape[0])
-        hourly_expense_natty = np.empty(F.shape[0])
-        for l in F:
-            l = int(l)
-            j = int(l % 24)
+        for l in range(len(F)):
+            j = l % 24
             hourly_expense = max((hourly_consumption[j] - F[l]), 0) * hourly_price[j]
             hourly_sales = min((hourly_consumption[j] - F[l]), 0) * hourly_price[j] * electricity_selling_fee * (-1)
             hourly_expenses_after_solar_cell[l] = hourly_expense - hourly_sales
 
-            hourly_expense_natty[i] = hourly_consumption[j] * hourly_price[j]
-
         # Store hourly expense values for each angle
         hourly_expense_total[:, i] = hourly_expenses_after_solar_cell
-        hourly_expense_natty_total[:, i] = hourly_expense_natty
+
+        # Store expense over the entire period
+        expense_over_period[i] = np.sum(hourly_expenses_after_solar_cell)
 
         # Integral over time period for each angle
         if int_ == 60:
@@ -135,9 +133,15 @@ def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
             integral_values[i] = integrate.simpson(F, dx=int_) / 3600
         # print(integral_values[i])
 
-    max_index = np.argmax(integral_values)
-    min_index = np.argmin(integral_values)
-    return integral_values, panel_effekt_vs_time[:, max_index], max_index, min_index, hourly_expense_total[:, max_index], hourly_expense_natty_total[:, max_index]
+    if optimizing_for == "Output":
+        max_index = np.argmax(integral_values)
+        min_index = np.argmin(integral_values)
+    else:
+        # "Max" here is the maximized GAIN from the solar panels
+        max_index = np.argmin(expense_over_period)
+        min_index = np.argmax(expense_over_period)
+
+    return integral_values, panel_effekt_vs_time[:, max_index], max_index, min_index, hourly_expense_total[:, max_index]
 
 
 def energy_per_day(angle_values, theta_p, phi_p, panel_area, S_0, A_0, W_p, int_):
@@ -162,8 +166,15 @@ def energy_per_day(angle_values, theta_p, phi_p, panel_area, S_0, A_0, W_p, int_
     quit()
 
 
+###########################
+## VARIABLES
+###########################
+
 # Check if the simulation is yearly or hourly
 time_interval = "year"
+
+# Optimizing for "Price" or "Output"
+optimization = "Output"
 
 # Coordinates for building 101 on DTU Lyngby Campus
 latitude = 55.786050  # Breddegrad
@@ -191,7 +202,6 @@ phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 91)
 # Array of theta values in radians from 0 to 90 degrees
 theta_panel = np.radians(np.arange(0, 91, 1))
 
-
 # Defining the panel dimensions i meters
 Længde = 2.278  # længde på solpanel
 Bredde = 1.133  # bredde på solpanel
@@ -201,11 +211,16 @@ S_0 = 1_100  # Samlede stråling (irradians)
 A_0 = 0.5  # Atmotfæriske forstyrrelser
 W_p = 0.211  # Solpanelet effektivitets faktor
 
+
+
+###########################
+###########################
+
 # energy_per_day(
 #     sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
 # )
 
-flux_total_arr, flux_vs_best_angle, max_index, min_index, hourly_expense, hourly_expense_without_solar_cell = test(
+flux_total_arr, flux_vs_best_angle, max_index, min_index, hourly_expense = test(
     sun_angles,
     phi_panel,
     theta_panel,
@@ -214,20 +229,28 @@ flux_total_arr, flux_vs_best_angle, max_index, min_index, hourly_expense, hourly
     A_0,
     W_p,
     int_=period_seconds,
+    optimizing_for = optimization
 )
 
 # Write the flux values for the best angle to a csv file
 flux_df = pd.DataFrame(flux_vs_best_angle, columns=["Flux"])
 flux_df.to_csv("flux_values.csv")
 
+# Making a consumption per hour reference list for the .csv
+hourly_consumption_reference = np.empty(flux_vs_best_angle.shape[0])
+hourly_expense_reference = np.empty(flux_vs_best_angle.shape[0])
+for i in range(len(hourly_consumption_reference)):
+    hourly_consumption_reference[i] = hourly_consumption[i % 24]
+    hourly_expense_reference[i] = hourly_consumption[i % 24] * hourly_price[i % 24]
+
 # Write the hourly expenses with flux data for best angle to csv file
-# Create a DataFrame with the provided lists as columns
-column_ID = list(range(1, len(flux_vs_best_angle) + 1))
+column_ID = list(range(0, len(flux_vs_best_angle)))
 data = {
     "Column ID": column_ID,
     "flux_vs_best_angle": flux_vs_best_angle,
+    "consumption (kWh)": hourly_consumption_reference,
     "hourly_expense": hourly_expense,
-    "hourly_expense_without_solar_cell": hourly_expense_without_solar_cell
+    "hourly_expense_without_solar_cell": hourly_expense_reference,
 }
 df = pd.DataFrame(data)
 df.to_csv("energy_data.csv", index=False)
