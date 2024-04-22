@@ -2,30 +2,49 @@ import numpy as np
 import sympy as sp
 import pvlib
 from pvlib.location import Location
+from scipy import integrate
 import pandas as pd
 from Koordinatsystem import angle_to_coords
 
 def flux_of_curve(V_s, V_p, sun_angles):
+    k=101
     # make a array to store the flux
     integrals = np.zeros(V_s[:,0].shape)
-    
     # loop through all the sun vectors and sun angles
-    for i, (v_s, sun_angle) in enumerate(zip(V_s, sun_angles)):
-        # if the sun is under the horizen, the panel has a negative flux, that makes no sense in the real world
-        # So if it is under the horizen we do not calcualte it and it stays at 0
-        if sun_angle[0] <= np.pi/2:
-            # calculate the dot produkt of the vecotr field and the normal vectors of the panel
-            dot = np.dot(v_s, V_p)
+    theta_p_linspace = np.linspace(0, (np.pi/2), k)
+    phi_p_linspace = np.linspace(np.pi/2, 3*np.pi/2, k)
+    avg_norm_vect = np.zeros((k-1, k-1, 3))
+    for i in range(k-1):
+        for j in range(k-1):
+            avg_norm_vect_x = V_p[0].subs([
+                (theta_p, (theta_p_linspace[i]+theta_p_linspace[i+1])/2), 
+                (phi_p, (phi_p_linspace[j] + phi_p_linspace[j+1])/2)])
             
+            avg_norm_vect_y = V_p[1].subs([
+                (theta_p, (theta_p_linspace[i]+theta_p_linspace[i+1])/2), 
+                (phi_p, (phi_p_linspace[j] + phi_p_linspace[j+1])/2)])
+            
+            avg_norm_vect_z = V_p[2].subs([
+                (theta_p, (theta_p_linspace[i]+theta_p_linspace[i+1])/2), 
+                (phi_p, (phi_p_linspace[j] + phi_p_linspace[j+1])/2)])
+            avg_norm_vect[i, j, 0], avg_norm_vect[i, j, 1], avg_norm_vect[i, j, 2] = avg_norm_vect_x, avg_norm_vect_y, avg_norm_vect_z
+    for c, (v_s, angle) in enumerate(zip(V_s, sun_angles[:,0])):
+        if angle < sp.pi/2:
+            # if the sun is under the horizen, the panel has a negative flux, that makes no sense in the real world
+            # So if it is under the horizen we do not calcualte it and it stays at 0
+            #if sun_angle[0] <= np.pi/2:
+                # calculate the dot produkt of the vecotr field and the normal vectors of the panel
+            inte = 0
+
             # make the inner integration of the dot product from 0 to pi/2 using theta
-            temp = sp.integrate(dot, (theta_p, 0, sp.pi/2))
-            
-            # depending on the suns lokation, we will integrate using diffrent limits
-            # this is to insure that no part of the panel has a negativ flux, which would not be true to reality
-            if sun_angle[1] >= sp.pi:
-                integrals[i] = sp.integrate(temp, (phi_p, sun_angle[1]-sp.pi/2, 3*sp.pi/2))
-            else:
-                integrals[i] = sp.integrate(temp, (phi_p, sp.pi/2, sun_angle[1]+sp.pi/2))
+
+            for i in range(k-1):
+                for j in range(k-1):
+                    
+                    dot = np.dot(avg_norm_vect[i, j], v_s)
+
+                    inte += max(dot * 1/((k-1)**2),0)
+            integrals[c] = inte
     return integrals
 
 def data_load(
@@ -67,7 +86,7 @@ def data_load(
 
 if __name__ == "__main__":
     # Check if the simulation is yearly or hourly
-    time_interval = "day"
+    time_interval = "year"
 
     # Coordinates for building 101 on DTU Lyngby Campus
     latitude = 55.786050  # Breddegrad
@@ -88,6 +107,14 @@ if __name__ == "__main__":
     y_p = sp.sin(phi_p) * sp.sin(theta_p)
     z_p = sp.cos(theta_p)
     V_p = np.array([x_p, y_p, z_p])
-    
+    # sun_angles = np.array([[sp.pi/4, sp.pi]])
     V_s = angle_to_coords(sun_angles[:,0], sun_angles[:,1], 1)
-    print(flux_of_curve(V_s=V_s, V_p=V_p, sun_angles=sun_angles))
+    F = (flux_of_curve(V_s=V_s, V_p=V_p, sun_angles=sun_angles))
+    
+    længde = 2.278
+    bredde = 1.133
+    S_0 = 1_100
+    A_0 = 0.5
+    WP = 0.211
+    F = F*S_0*A_0*WP*længde*bredde/1000
+    print(integrate.simpson(F, dx=3600)/3600)
