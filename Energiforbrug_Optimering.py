@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from Koordinatsystem import *
 from scipy import integrate
+import time as t
+
 
 # Data from https://www.dst.dk/Site/Dst/SingleFiles/GetArchiveFile.aspx?fi=formid&fo=elforbrug--pdf&ext={2}
 hourly_consumption = np.array([
@@ -95,7 +97,7 @@ def flux(
     return flux_solar
 
 
-def flux_simulation_old(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
+# def flux_simulation_old(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
     # Initialize arrays for the panel_effekt over time and the integral values
     panel_effekt_vs_time = np.empty((angles.shape[0], theta_p.shape[0]))
     integral_values = np.empty(theta_p.shape[0])
@@ -144,17 +146,26 @@ def flux_simulation_old(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_)
 
 
 def flux_simulation(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
+    phi_size = phi_p.shape[0]
+    theta_size= theta_p.shape[0]
+    total_number_of_hours = angles.shape[0]
+
     # Initialize arrays for the panel_effekt over time and the integral values
-    panel_effekt_vs_time = np.empty((angles.shape[0], theta_p.shape[0], phi_p.shape[0]))
-    hourly_expense_total = np.empty((angles.shape[0], theta_p.shape[0], phi_p.shape[0]))
-    integral_values = np.empty((theta_p.shape[0], phi_p.shape[0]))
-    expense_over_period = np.empty((theta_p.shape[0], phi_p.shape[0]))
+    panel_effekt_vs_time = np.empty((total_number_of_hours, theta_size, phi_size))
+    hourly_expense_total = np.empty((total_number_of_hours, theta_size, phi_size))
+    integral_values = np.empty((theta_size, phi_size))
+    expense_over_period = np.empty((theta_size, phi_size))
+    
+    progress = 0
+    start_time = 0
+    end_time = 0
+    delta_time = end_time - start_time
+    total_delta_time = 0
 
     # Loop over both theta and phi values
-    for j in range(phi_p.shape[0]):
-        print(np.rad2deg(phi_panel[j]))
-        for i in range(theta_p.shape[0]):
-            print(np.rad2deg(theta_panel[i]))
+    for j in range(phi_size):
+        for i in range(theta_size):
+            start_time = t.time()
             # Calculate the flux for each angle
             F = flux(angles, theta_p[i], phi_p[j], panel_area, S_0, A_0, W_p)
 
@@ -173,6 +184,15 @@ def flux_simulation(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
             # Store the integral and expenses in the 2D arrays
             integral_values[i, j] = integrate.simpson(F, dx=int_) / (60 * 60 if int_ == 60 else 3600)
             expense_over_period[i, j] = np.sum(hourly_expenses_after_solar_cell)
+            
+            progress += 1
+
+            end_time = t.time()
+            delta_time = end_time - start_time
+            total_delta_time += delta_time
+            estimated_remaining_time = delta_time * (phi_size * theta_size - i * j)
+            print(f"Progress: {round(progress / (phi_size * theta_size) * 100, 2)} % -- Elapsed time: {round(total_delta_time // 3600)} h {round((total_delta_time % 3600) // 60)} min {round(total_delta_time % 60)} s. Estimated remaining time: {round(estimated_remaining_time // 3600)} h {round((estimated_remaining_time % 3600) // 60)} min {round(estimated_remaining_time % 60)} s")
+            
     
     # Find the indexes of the max and min values across theta and phi
     max_index_output_theta, max_index_output_phi = np.unravel_index(np.argmax(integral_values, axis=None), integral_values.shape)
@@ -185,7 +205,7 @@ def flux_simulation(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
     return integral_values, panel_effekt_vs_time, (max_index_output_theta, max_index_output_phi), (min_index_output_theta, min_index_output_phi), hourly_expense_total, (max_index_price_theta, max_index_price_phi), (min_index_price_theta, min_index_price_phi)
 
 
-def energy_per_day(angle_values, theta_p, phi_p, panel_area, S_0, A_0, W_p, int_):
+# def energy_per_day(angle_values, theta_p, phi_p, panel_area, S_0, A_0, W_p, int_):
     # Loop over the theta_p (angles of panel) values
     daily_energy_arr = []
 
