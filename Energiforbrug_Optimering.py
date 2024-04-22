@@ -6,16 +6,16 @@ import pandas as pd
 from Koordinatsystem import *
 from scipy import integrate
 
+# Data from https://www.dst.dk/Site/Dst/SingleFiles/GetArchiveFile.aspx?fi=formid&fo=elforbrug--pdf&ext={2}
 hourly_consumption = np.array([
     0.3, 0.25, 0.2, 0.2, 0.2, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
     0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.8, 0.7, 0.6, 0.5, 0.4
 ])
 
-hourly_price = np.array([
-    282.27, 259.43, 257.79, 254.89, 252.58, 274.53, 334.94, 394.46,
-    432.33, 392.75, 332.34, 285.32, 259.58, 256.75, 213.53, 232.35,
-    247.38, 340.75, 394.91, 418.27, 385.68, 338.52, 261.14, 249.76
-])
+# Data from https://www.energidataservice.dk/tso-electricity/Elspotprices
+# Read the hourly price data from CVS file to np array
+df = pd.read_csv('Elspotprices_2023_hourly.csv', header=None)
+hourly_price = df.iloc[:, 0].values
 
 # Percent fee for selling electricity back to the power grid
 # From https://www.greenmatch.dk/solceller/salg-af-stroem
@@ -27,8 +27,8 @@ def data_load(
 
     if time_interval == "year":
         # Y/M/D
-        start_dato = "2024-01-01"
-        slut_dato = "2024-12-31"
+        start_dato = "2023-01-01"
+        slut_dato = "2023-12-31"
         delta_tid = "h"
 
     elif time_interval == "day":
@@ -162,8 +162,8 @@ def flux_simulation(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
             hourly_expenses_after_solar_cell = np.empty(F.shape[0])
             for l in range(len(F)):
                 k = l % 24
-                hourly_expense = max((hourly_consumption[k] - F[l]), 0) * hourly_price[k]
-                hourly_sales = min((hourly_consumption[k] - F[l]), 0) * hourly_price[k] * electricity_selling_fee * (-1)
+                hourly_expense = max((hourly_consumption[k] - F[l]), 0) * hourly_price[l]
+                hourly_sales = min((hourly_consumption[k] - F[l]), 0) * hourly_price[l] * electricity_selling_fee * (-1)
                 hourly_expenses_after_solar_cell[l] = hourly_expense - hourly_sales
             
             # Store the results in the 3D arrays
@@ -237,7 +237,7 @@ elif time_interval == "day":
 
 # array of phi values including the max and min index
 # 90 degrees = East , 270 degrees = West
-phi_panel = np.radians(np.arange(178, 182, 1)) #South-East to South_West
+phi_panel = np.radians(np.arange(135, 225, 1)) #South-East to South_West
 # phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 2)
 # Array of theta values in radians from 0 to 90 degrees
 theta_panel = np.radians(np.arange(25, 70, 1))
