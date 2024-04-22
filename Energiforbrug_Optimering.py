@@ -26,8 +26,9 @@ def data_load(
 ):
 
     if time_interval == "year":
-        start_dato = "2024-06-01"
-        slut_dato = "2024-06-10"
+        # Y/M/D
+        start_dato = "2024-01-01"
+        slut_dato = "2024-12-31"
         delta_tid = "h"
 
     elif time_interval == "day":
@@ -151,7 +152,9 @@ def flux_simulation(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
 
     # Loop over both theta and phi values
     for j in range(phi_p.shape[0]):
+        print(np.rad2deg(phi_panel[j]))
         for i in range(theta_p.shape[0]):
+            print(np.rad2deg(theta_panel[i]))
             # Calculate the flux for each angle
             F = flux(angles, theta_p[i], phi_p[j], panel_area, S_0, A_0, W_p)
 
@@ -233,14 +236,15 @@ elif time_interval == "day":
     period_seconds = 60
 
 # array of phi values including the max and min index
-phi_panel = np.radians(np.arange(50, 150, 1))
+# 90 degrees = East , 270 degrees = West
+phi_panel = np.radians(np.arange(178, 182, 1)) #South-East to South_West
 # phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 2)
 # Array of theta values in radians from 0 to 90 degrees
-theta_panel = np.radians(np.arange(0, 91, 1))
+theta_panel = np.radians(np.arange(25, 70, 1))
 
 # Defining the panel dimensions i meters
-Længde = 2.278  # længde på solpanel
-Bredde = 1.133  # bredde på solpanel
+Længde = np.sqrt(40)  # længde på solpanel
+Bredde = np.sqrt(40)  # bredde på solpanel
 panel_areal = Længde * Bredde
 
 S_0 = 1_100  # Samlede stråling (irradians)
@@ -273,11 +277,11 @@ min_price_angles = (theta_panel[min_index_price[0]], phi_panel[min_index_price[1
 
 
 # The best flux and expense values for the best angle determined by OUTPUT
-flux_vs_best_angle_output = flux_vs_best_angle_total[: max_index_output[0], max_index_output[1]]
-hourly_expense_output = hourly_expense_total[: max_index_output[0], max_index_output[1]]
+flux_vs_best_angle_output = flux_vs_best_angle_total[:, max_index_output[0], max_index_output[1]]
+hourly_expense_output = hourly_expense_total[:, max_index_output[0], max_index_output[1]]
 # By PRICE
-flux_vs_best_angle_price = flux_vs_best_angle_total[: max_index_price[0], max_index_price[1]]
-hourly_expense_price = hourly_expense_total[: max_index_price[0], max_index_price[1]]
+flux_vs_best_angle_price = flux_vs_best_angle_total[:, max_index_price[0], max_index_price[1]]
+hourly_expense_price = hourly_expense_total[:, max_index_price[0], max_index_price[1]]
 
 
 # Making a consumption per hour reference list for the .csv
@@ -286,7 +290,6 @@ hourly_expense_reference = np.empty(flux_vs_best_angle_output.shape[0])
 for i in range(len(hourly_consumption_reference)):
     hourly_consumption_reference[i] = hourly_consumption[i % 24]
     hourly_expense_reference[i] = hourly_consumption[i % 24] * hourly_price[i % 24]
-
 # Write the hourly expenses with flux data for best angle to csv file
 column_ID = list(range(0, len(flux_vs_best_angle_output)))
 data = {
@@ -296,7 +299,7 @@ data = {
     "flux_at_best_angle_OUTPUT": flux_vs_best_angle_output,
     "hourly_expense_OUTPUT": hourly_expense_output,
     "flux_at_best_angle_PRICE": flux_vs_best_angle_price,
-    "hourly_expense_PRICE": hourly_expense_price,  
+    "hourly_expense_PRICE": hourly_expense_price,
 }
 df = pd.DataFrame(data)
 df.to_csv("energy_data.csv", index=False)
