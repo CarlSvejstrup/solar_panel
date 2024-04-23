@@ -86,14 +86,8 @@ def flux(
     normal_vector_projection = solar_panel_projection(
         angles_s[:, 0], angles_s[:, 1], theta_panel_full, phi_panel_full
     )
-    # print(f"{normal_vector_projection} \n")
-    # print(f"proj {normal_vector_projection}")
 
-    # for i in range(m):
-    # F[i] = sp.integrate((u_sp[i] * S_0), (u, a1, b1), (v, a2, b2))
-    # Convert from W/m^2 to kW
     flux_solar = (normal_vector_projection * (S_0 * A_0) * W_p * Area) / 1_000
-    # print(f"flux {flux_solar}\n")
     return flux_solar
 
 
@@ -157,9 +151,12 @@ def flux_simulation(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
     expense_over_period = np.empty((theta_size, phi_size))
     
     progress = 0
+    delta_time_progress =  0
+    delta_time_progress_limit = 10
     start_time = 0
     end_time = 0
     delta_time = end_time - start_time
+    delta_time_avg_data = np.empty((delta_time_progress_limit))
     total_delta_time = 0
 
     # Loop over both theta and phi values
@@ -185,14 +182,16 @@ def flux_simulation(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
             integral_values[i, j] = integrate.simpson(F, dx=int_) / (60 * 60 if int_ == 60 else 3600)
             expense_over_period[i, j] = np.sum(hourly_expenses_after_solar_cell)
             
+            # Progress
             progress += 1
-
             end_time = t.time()
-            delta_time = end_time - start_time
             total_delta_time += delta_time
-            estimated_remaining_time = delta_time * (phi_size * theta_size - i * j)
+            delta_time = end_time - start_time
+            delta_time_avg_data[int(delta_time_progress)] = delta_time
+            delta_time_avg = np.mean(delta_time_avg_data, axis = 0)
+            estimated_remaining_time = (delta_time_avg if delta_time_avg_data[delta_time_progress_limit - 1] != 0 else delta_time) * (phi_size * theta_size - (j + 1) * (i + 1))
+            delta_time_progress += 1 if delta_time_progress <= (delta_time_progress_limit - 2) else ((delta_time_progress_limit - 1) * (-1))
             print(f"Progress: {round(progress / (phi_size * theta_size) * 100, 2)} % -- Elapsed time: {round(total_delta_time // 3600)} h {round((total_delta_time % 3600) // 60)} min {round(total_delta_time % 60)} s. Estimated remaining time: {round(estimated_remaining_time // 3600)} h {round((estimated_remaining_time % 3600) // 60)} min {round(estimated_remaining_time % 60)} s")
-            
     
     # Find the indexes of the max and min values across theta and phi
     max_index_output_theta, max_index_output_phi = np.unravel_index(np.argmax(integral_values, axis=None), integral_values.shape)
@@ -255,16 +254,16 @@ if time_interval == "year":
 elif time_interval == "day":
     period_seconds = 60
 
-# array of phi values including the max and min index
+# Array of phi values including the max and min index
 # 90 degrees = East , 270 degrees = West
-phi_panel = np.radians(np.arange(135, 225, 1)) #South-East to South_West
-# phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 2)
+phi_panel = np.radians(np.arange(135, 226, 1)) #South-East to South_West
 # Array of theta values in radians from 0 to 90 degrees
-theta_panel = np.radians(np.arange(25, 70, 1))
+theta_panel = np.radians(np.arange(0, 91, 1))
 
 # Defining the panel dimensions i meters
-Længde = np.sqrt(40)  # længde på solpanel
-Bredde = np.sqrt(40)  # bredde på solpanel
+# Data from https://www.greenmatch.dk/solceller/6-kw-solcelleanlaeg (approx 35 m2)
+Længde = np.sqrt(36)  # længde på solpanel
+Bredde = np.sqrt(36)  # bredde på solpanel
 panel_areal = Længde * Bredde
 
 S_0 = 1_100  # Samlede stråling (irradians)
@@ -295,7 +294,6 @@ min_output_angles = (theta_panel[min_index_output[0]], phi_panel[min_index_outpu
 max_price_angles = (theta_panel[max_index_price[0]], phi_panel[max_index_price[1]])
 min_price_angles = (theta_panel[min_index_price[0]], phi_panel[min_index_price[1]])
 
-
 # The best flux and expense values for the best angle determined by OUTPUT
 flux_vs_best_angle_output = flux_vs_best_angle_total[:, max_index_output[0], max_index_output[1]]
 hourly_expense_output = hourly_expense_total[:, max_index_output[0], max_index_output[1]]
@@ -303,17 +301,22 @@ hourly_expense_output = hourly_expense_total[:, max_index_output[0], max_index_o
 flux_vs_best_angle_price = flux_vs_best_angle_total[:, max_index_price[0], max_index_price[1]]
 hourly_expense_price = hourly_expense_total[:, max_index_price[0], max_index_price[1]]
 
+# Converting the max indexes to string
+output_max_str = f"MAX value for OUTPUT: {flux_total_arr[max_index_output[0], max_index_output[1]]:.3f} kWh & Energy Expense per {time_interval} = {round(np.sum(hourly_expense_output) / 100, 2)} DKK ___ theta = {90 - np.rad2deg(max_output_angles[0])}, phi = {np.rad2deg(max_output_angles[1])} degrees"
+price_max_str = f"MAX value for PRICE: {flux_total_arr[max_index_price[0], max_index_price[1]]:.3f} kWh & Energy Expense per {time_interval} = {round(np.sum(hourly_expense_price) / 100, 2)} DKK ___ theta = {90 - np.rad2deg(max_price_angles[0])}, phi = {np.rad2deg(max_price_angles[1])} degrees"
+output_min_str = f"MIN value for OUTPUT: {flux_total_arr[min_index_output[0], min_index_output[1]]:.3f} kWh ___ theta = {90 - np.rad2deg(min_output_angles[0])}, phi = {np.rad2deg(min_output_angles[1])} degrees"
+price_min_str = f"MIN value for PRICE: {flux_total_arr[min_index_price[0], min_index_price[1]]:.3f} kWh ___ theta = {90 - np.rad2deg(min_price_angles[0])}, phi = {np.rad2deg(min_price_angles[1])} degrees"
 
 # Making a consumption per hour reference list for the .csv
 hourly_consumption_reference = np.empty(flux_vs_best_angle_output.shape[0])
 hourly_expense_reference = np.empty(flux_vs_best_angle_output.shape[0])
 for i in range(len(hourly_consumption_reference)):
     hourly_consumption_reference[i] = hourly_consumption[i % 24]
-    hourly_expense_reference[i] = hourly_consumption[i % 24] * hourly_price[i % 24]
+    hourly_expense_reference[i] = hourly_consumption[i % 24] * hourly_price[i]
 # Write the hourly expenses with flux data for best angle to csv file
 column_ID = list(range(0, len(flux_vs_best_angle_output)))
 data = {
-    "Column ID": column_ID,
+    "Hour": column_ID,
     "consumption (kWh)": hourly_consumption_reference,
     "hourly_expense_without_solar_cell": hourly_expense_reference,
     "flux_at_best_angle_OUTPUT": flux_vs_best_angle_output,
@@ -322,6 +325,12 @@ data = {
     "hourly_expense_PRICE": hourly_expense_price,
 }
 df = pd.DataFrame(data)
+
+# Adding the index strings to the CSV
+extra_info = [output_max_str, price_max_str, output_min_str, price_min_str]
+extra_info += [""] * (len(df) - len(extra_info))  # Fill the rest of the column with empty strings
+df["Solar Panel Angel Info"] = extra_info
+
 df.to_csv("energy_data.csv", index=False)
 
 # # Plot the flux values for the best angle
@@ -338,8 +347,8 @@ df.to_csv("energy_data.csv", index=False)
 
 # print flux determined by output and price
 # OUPUT
-print(f"Max value determined by OUTPUT: {flux_total_arr[max_index_output[0], max_index_output[1]]:.3f} kWh, at theta = {90 - np.rad2deg(max_output_angles[0])} and phi = {np.rad2deg(max_output_angles[1])} degrees")
-print(f"Min value determined by OUTPUT: {flux_total_arr[min_index_output[0], min_index_output[1]]:.3f} kWh, at theta = {90 - np.rad2deg(min_output_angles[0])} and phi = {np.rad2deg(min_output_angles[1])} degrees")
+print(output_max_str)
+print(price_max_str)
 # PRICE
-print(f"Max value determined by PRICE: {flux_total_arr[max_index_price[0], max_index_price[1]]:.3f} kWh, at theta = {90 - np.rad2deg(max_price_angles[0])} and phi = {np.rad2deg(max_price_angles[1])} degrees")
-print(f"Min value determined by PRICE: {flux_total_arr[min_index_price[0], min_index_price[1]]:.3f} kWh, at theta = {90 - np.rad2deg(min_price_angles[0])} and phi = {np.rad2deg(min_price_angles[1])} degrees")
+print(output_min_str)
+print(price_min_str)
