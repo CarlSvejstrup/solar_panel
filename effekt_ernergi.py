@@ -69,8 +69,7 @@ def flux(
     normal_vector_projection = solar_panel_projection(
         angles_s[:, 0], angles_s[:, 1], theta_panel_full, phi_panel_full
     )
-    print(f"{normal_vector_projection} \n")
-    # print(f"proj {normal_vector_projection}")
+    
 
     # for i in range(m):
     # F[i] = sp.integrate((u_sp[i] * S_0), (u, a1, b1), (v, a2, b2))
@@ -89,7 +88,6 @@ def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
     for i in range(len(theta_p)):
         # Calculate the flux for each angle
         F = flux(angles, theta_p[i], phi_p[i], panel_area, S_0, A_0, W_p)
-
         # Store the flux values for each angle
         panel_effekt_vs_time[:, i] = F
 
@@ -113,7 +111,6 @@ def energy_per_day(angle_values, theta_p, phi_p, panel_area, S_0, A_0, W_p, int_
 
     F = flux(angle_values, theta_p[0], phi_p[0], panel_area, S_0, A_0, W_p)
     F = np.array_split(F, 365)
-    print(F[0])
 
     for j in range(len(F)):
         daily_energy = integrate.simpson(F[j], dx=int_) / 3600
@@ -130,7 +127,7 @@ def energy_per_day(angle_values, theta_p, phi_p, panel_area, S_0, A_0, W_p, int_
 
 
 # Check if the simulation is yearly or hourly
-time_interval = "year"
+time_interval = "day"
 
 # Coordinates for building 101 on DTU Lyngby Campus
 latitude = 55.786050  # Breddegrad
@@ -151,12 +148,12 @@ sun_angles, time = data_load(
 if time_interval == "year":
     period_seconds = 3_600
 elif time_interval == "day":
-    period_seconds = 60
+    period_seconds = 3_600
 
 # array of phi values including the max and min index
 phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 1)
 # Array of theta values in radians from 0 to 90 degrees
-theta_panel = np.radians(np.arange(51, 52, 1))
+theta_panel = np.radians(np.arange(45, 46, 1))
 
 
 # Defining the panel dimensions i meters
@@ -168,20 +165,25 @@ S_0 = 1_100  # Samlede stråling (irradians)
 A_0 = 0.5  # Atmotfæriske forstyrrelser
 W_p = 0.211  # Solpanelet effektivitets faktor
 
-energy_per_day(
-    sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
-)
+# energy_per_day(
+#     sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
+# )
+
+# flux_total_arr, flux_vs_best_angle, max_index, min_index = test(
+#     sun_angles,
+#     phi_panel,
+#     theta_panel,
+#     panel_areal,
+#     S_0,
+#     A_0,
+#     W_p,
+#     int_=period_seconds,
+# )
 
 flux_total_arr, flux_vs_best_angle, max_index, min_index = test(
-    sun_angles,
-    phi_panel,
-    theta_panel,
-    panel_areal,
-    S_0,
-    A_0,
-    W_p,
-    int_=period_seconds,
+    sun_angles, phi_panel, theta_panel, panel_areal, S_0, A_0, W_p, period_seconds
 )
+
 
 # Write the flux values for the best angle to a csv file
 flux_df = pd.DataFrame(flux_vs_best_angle, columns=["Flux"])
