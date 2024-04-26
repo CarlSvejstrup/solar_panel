@@ -261,7 +261,7 @@ phi_panel = np.radians(np.arange(135, 226, 1)) #South-East to South_West
 theta_panel = np.radians(np.arange(0, 91, 1))
 
 # Defining the panel dimensions i meters
-# Data from https://www.greenmatch.dk/solceller/6-kw-solcelleanlaeg (approx 35 m2)
+# Data from https://www.greenmatch.dk/solceller/6-kw-solcelleanlaeg (approx 36 m2)
 Længde = np.sqrt(36)  # længde på solpanel
 Bredde = np.sqrt(36)  # bredde på solpanel
 panel_areal = Længde * Bredde
