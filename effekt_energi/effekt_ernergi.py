@@ -3,7 +3,7 @@ from pvlib.location import Location
 import sympy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
-from Koordinatsystem import *
+from Solpositionsmodellering.koordinatsystem import *
 from scipy import integrate
 
 
@@ -186,8 +186,8 @@ flux_total_arr, flux_vs_best_angle, max_index, min_index = test(
 
 
 # Write the flux values for the best angle to a csv file
-flux_df = pd.DataFrame(flux_vs_best_angle, columns=["Flux"])
-flux_df.to_csv("flux_values.csv")
+# flux_df = pd.DataFrame(flux_vs_best_angle, columns=["Flux"])
+# flux_df.to_csv("flux_values.csv")
 
 # Plot the flux values for the best angle
 plt.plot(time, flux_vs_best_angle)
