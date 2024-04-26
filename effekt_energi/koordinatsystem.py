@@ -71,39 +71,39 @@ med numeriske fejl, bør det give array([7.07106781e-01, 6.12323400e-17, 0.0])).
 Forklar solpanelets orientering og solens placering i de tre situationer."""
 
 
-def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
-    inner = np.zeros(theta_sol.size)
-    for i, (theta_s, phi_s, theta_p, phi_p) in enumerate(
-        zip(theta_sol, phi_sol, theta_panel, phi_panel)
-    ):
-        temp = sp.sin(theta_p) * sp.sin(theta_s) * sp.cos(phi_p - phi_s) + sp.cos(
-            theta_p
-        ) * sp.cos(theta_s)
-        if temp > 0:
-            inner[i] = temp
-    return inner
-
-
 # def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
 #     inner = np.zeros(theta_sol.size)
 #     for i, (theta_s, phi_s, theta_p, phi_p) in enumerate(
 #         zip(theta_sol, phi_sol, theta_panel, phi_panel)
 #     ):
-#         if (
-#             np.rad2deg(theta_s) < 90
-#         ):  # Only calculates the flux if the sun is above the horizon
-#             flux = max(
-#                 sp.sin(theta_p) * sp.sin(theta_s) * sp.cos(phi_p - phi_s)
-#                 + sp.cos(theta_p) * sp.cos(theta_s),
-#                 0,
-#             )  # Only returns positive values for the flux
-#             # print(f"Calculating flux = {round(flux,2)} at theta = {round(np.rad2deg(theta_s),2)}")
-#         else:
-#             # print(f"Sun is down")
-#             flux = 0
-
-#         inner[i] = flux
+#         temp = sp.sin(theta_p) * sp.sin(theta_s) * sp.cos(phi_p - phi_s) + sp.cos(
+#             theta_p
+#         ) * sp.cos(theta_s)
+#         if temp > 0:
+#             inner[i] = temp
 #     return inner
+
+
+def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
+    inner = np.zeros(theta_sol.size)
+    for i, (theta_s, phi_s, theta_p, phi_p) in enumerate(
+        zip(theta_sol, phi_sol, theta_panel, phi_panel)
+    ):
+        if (
+            np.rad2deg(theta_s) < 90
+        ):  # Only calculates the flux if the sun is above the horizon
+            flux = max(
+                sp.sin(theta_p) * sp.sin(theta_s) * sp.cos(phi_p - phi_s)
+                + sp.cos(theta_p) * sp.cos(theta_s),
+                0,
+            )  # Only returns positive values for the flux
+            # print(f"Calculating flux = {round(flux,2)} at theta = {round(np.rad2deg(theta_s),2)}")
+        else:
+            # print(f"Sun is down")
+            flux = 0
+
+        inner[i] = flux
+    return inner
 
 
 theta_sol = np.array([np.pi / 4, np.pi / 2, 0.0, np.pi / 4, np.pi / 4, np.pi / 4])
