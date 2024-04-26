@@ -92,7 +92,7 @@ def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
             flux = max(sp.sin(theta_p) * sp.sin(theta_s) * sp.cos(phi_p - phi_s) + sp.cos(theta_p) * sp.cos(theta_s), 0) # Only returns positive values for the flux
             # print(f"Calculating flux = {round(flux,2)} at theta = {round(np.rad2deg(theta_s),2)}")
         else:
-            # print(f"Sun is down")
+            # Sun is down
             flux = 0
         
         inner[i] = flux

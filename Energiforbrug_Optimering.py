@@ -173,15 +173,15 @@ def flux_simulation(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
                 hourly_expense = max((hourly_consumption[k] - F[l]), 0) * hourly_price[l]
                 hourly_sales = min((hourly_consumption[k] - F[l]), 0) * hourly_price[l] * electricity_selling_fee * (-1)
                 hourly_expenses_after_solar_cell[l] = hourly_expense - hourly_sales
-            
+
             # Store the results in the 3D arrays
             panel_effekt_vs_time[:, i, j] = F
             hourly_expense_total[:, i, j] = hourly_expenses_after_solar_cell
-            
+
             # Store the integral and expenses in the 2D arrays
             integral_values[i, j] = integrate.simpson(F, dx=int_) / (60 * 60 if int_ == 60 else 3600)
             expense_over_period[i, j] = np.sum(hourly_expenses_after_solar_cell)
-            
+
             # Progress
             progress += 1
             end_time = t.time()
@@ -189,10 +189,10 @@ def flux_simulation(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
             delta_time = end_time - start_time
             delta_time_avg_data[int(delta_time_progress)] = delta_time
             delta_time_avg = np.mean(delta_time_avg_data, axis = 0)
-            estimated_remaining_time = (delta_time_avg if delta_time_avg_data[delta_time_progress_limit - 1] != 0 else delta_time) * (phi_size * theta_size - (j + 1) * (i + 1))
+            estimated_remaining_time = (delta_time_avg if delta_time_avg_data[delta_time_progress_limit - 1] != 0 else delta_time) * (phi_size * theta_size - progress)
             delta_time_progress += 1 if delta_time_progress <= (delta_time_progress_limit - 2) else ((delta_time_progress_limit - 1) * (-1))
             print(f"Progress: {round(progress / (phi_size * theta_size) * 100, 2)} % -- Elapsed time: {round(total_delta_time // 3600)} h {round((total_delta_time % 3600) // 60)} min {round(total_delta_time % 60)} s. Estimated remaining time: {round(estimated_remaining_time // 3600)} h {round((estimated_remaining_time % 3600) // 60)} min {round(estimated_remaining_time % 60)} s")
-    
+
     # Find the indexes of the max and min values across theta and phi
     max_index_output_theta, max_index_output_phi = np.unravel_index(np.argmax(integral_values, axis=None), integral_values.shape)
     min_index_output_theta, min_index_output_phi = np.unravel_index(np.argmin(integral_values, axis=None), integral_values.shape)
