@@ -45,12 +45,12 @@ sunrise_y = adjusted_solpos.loc[chosen_date].elevation[sunrise_x]
 sunset_y = adjusted_solpos.loc[chosen_date].elevation[sunset_x]
 
 # Plot the points
-ax3.plot(sunrise_x, sunrise_y, 'ko' , label='Sunrise: 05:58')
-ax3.plot(sunset_x, sunset_y, 'ko', label='Sunset: 20:21')
-ax2.plot(sunrise_x, adjusted_solpos.loc[chosen_date].azimuth[sunrise_x], 'ko',label='Sunrise: 05:58')
-ax2.plot(sunset_x, adjusted_solpos.loc[chosen_date].azimuth[sunset_x], 'ko', label='Sunset: 20:21')
-ax1.plot(sunrise_x, adjusted_solpos.loc[chosen_date].zenith[sunrise_x], 'ko',label='Sunrise: 05:58')
-ax1.plot(sunset_x, adjusted_solpos.loc[chosen_date].zenith[sunset_x], 'ko', label='Sunset: 20:21')
+ax3.plot(sunrise_x, sunrise_y, 'ko' , label='Sunrise: 05:54')
+ax3.plot(sunset_x, sunset_y, 'ko', label='Sunset: 20:25')
+ax2.plot(sunrise_x, adjusted_solpos.loc[chosen_date].azimuth[sunrise_x], 'ko',label='Sunrise: 05:54')
+ax2.plot(sunset_x, adjusted_solpos.loc[chosen_date].azimuth[sunset_x], 'ko', label='Sunset: 20:25')
+ax1.plot(sunrise_x, adjusted_solpos.loc[chosen_date].zenith[sunrise_x], 'ko',label='Sunrise: 05:54')
+ax1.plot(sunset_x, adjusted_solpos.loc[chosen_date].zenith[sunset_x], 'ko', label='Sunset: 20:25')
 
 # Add the legend
 ax1.legend()
