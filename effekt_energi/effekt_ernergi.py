@@ -13,8 +13,8 @@ def data_load(
 
     if time_interval == "year":
         start_dato = "2024-01-01"
-        slut_dato = "2024-12-31"
-        delta_tid = "h"
+        slut_dato = "2024-01-31"
+        delta_tid = "min"
 
     elif time_interval == "day":
         start_dato = date
@@ -52,10 +52,10 @@ def plot_energy_curve(energy_generation: np.ndarray, save: bool):
         "Days after jan. 1 ", fontsize=12, fontweight="bold"
     )  # Set the label for the x-axis
     plt.ylabel(
-        "Energy (kWh)", fontsize=12, fontweight="bold"
+        "Energi (kWh)", fontsize=12, fontweight="bold"
     )  # Set the label for the y-axis
     plt.title(
-        "Daily Energy Generation: 2024", fontsize=14, fontweight="bold"
+        "Daglig energiudbytte for 2024", fontsize=14, fontweight="bold"
     )  # Set the title of the plot
     plt.grid(
         True, which="both", linestyle="--", linewidth=0.5
@@ -139,57 +139,17 @@ def energy_per_day(
     F = np.array_split(F, 366)
 
     for j in range(len(F)):
-
         daily_energy = integrate.simpson(F[j], dx=int_) / 3600
         daily_energy_arr.append(daily_energy)
 
     print(
-        f"Total energy generation: {np.sum(daily_energy_arr):.3f} for theta angle: {np.rad2deg(theta_p):.3f}"
+        f"Total energy generation: {np.sum(daily_energy_arr):.3f} for theta angle: {np.rad2deg(theta_p[0]):.3f}"
     )
+    # plot the energy generation curve
+    plt.plot(daily_energy_arr)
+    plt.show()
+
     return daily_energy_arr
-
-
-# Check if the simulation is yearly or hourly
-time_interval = "year"
-
-# Coordinates for building 101 on DTU Lyngby Campus
-latitude = 55.786050  # Breddegrad
-longitude = 12.523380  # Længdegrad
-altitude = 52  # Meters above sea level. 42 meters is the level + approximately 10 meters for the building height.
-
-# load data
-sun_angles, time = data_load(
-    time_interval=time_interval,
-    latitude=latitude,
-    longitude=longitude,
-    tidszone="Europe/Copenhagen",
-    altitude=altitude,
-    date="2024-04-20",
-)
-
-# Integral period based on yearly or hourly simulation
-if time_interval == "year":
-    period_seconds = 3600
-elif time_interval == "day":
-    period_seconds = 60
-
-# array of phi values including the max and min index
-phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 1)
-# Array of theta values in radians from 0 to 90 degrees
-theta_panel = np.radians(np.arange(0, 91, 1))
-
-# Defining the panel dimensions i meters
-Længde = 2.278  # længde på solpanel
-Bredde = 1.133  # bredde på solpanel
-panel_areal = Længde * Bredde
-
-S_0 = 1_100  # Samlede stråling (irradians)
-A_0 = 0.5  # Atmotfæriske forstyrrelser
-W_p = 0.211  # Solpanelet effektivitets faktor
-
-# energy_generation = energy_per_day(
-#     sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
-# )
 
 
 def plot_energy_vs_theta(save: bool):
@@ -232,7 +192,50 @@ def plot_energy_vs_theta(save: bool):
     plt.show()
 
 
-plot_energy_vs_theta(save=True)
+# Check if the simulation is yearly or hourly
+time_interval = "year"
+
+# Coordinates for building 101 on DTU Lyngby Campus
+latitude = 55.786050  # Breddegrad
+longitude = 12.523380  # Længdegrad
+altitude = 52  # Meters above sea level. 42 meters is the level + approximately 10 meters for the building height.
+
+# load data
+sun_angles, time = data_load(
+    time_interval=time_interval,
+    latitude=latitude,
+    longitude=longitude,
+    tidszone="Europe/Copenhagen",
+    altitude=altitude,
+    date="2024-04-20",
+)
+
+# Integral period based on yearly or hourly simulation
+if time_interval == "year":
+    period_seconds = 3600
+elif time_interval == "day":
+    period_seconds = 3600
+
+# array of phi values including the max and min index
+phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 1)
+# Array of theta values in radians from 0 to 90 degrees
+theta_panel = np.radians(np.arange(51, 52, 1))
+
+# Defining the panel dimensions i meters
+Længde = 2.278  # længde på solpanel
+Bredde = 1.133  # bredde på solpanel
+panel_areal = 36
+
+S_0 = 1_100  # Samlede stråling (irradians)
+A_0 = 0.5  # Atmotfæriske forstyrrelser
+W_p = 0.211  # Solpanelet effektivitets faktor
+
+energy_generation = energy_per_day(
+    sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
+)
+
+
+# plot_energy_vs_theta(save=True)
 
 # plot_energy_curve(energy_generation, save=True)
 
