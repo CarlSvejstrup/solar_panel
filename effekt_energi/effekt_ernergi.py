@@ -16,7 +16,7 @@ def data_load(
         slut_dato = "2024-12-31"
         delta_tid = "h"
 
-    elif time_interval == "==":
+    elif time_interval == "day":
         start_dato = date
         slut_dato = date
         delta_tid = "min"
@@ -144,7 +144,7 @@ def energy_per_day(
         daily_energy_arr.append(daily_energy)
 
     print(
-        f"Total energy generation: {np.sum(daily_energy_arr):.3f} for alpha angle: {90 - np.rad2deg(theta_p):.3f}"
+        f"Total energy generation: {np.sum(daily_energy_arr):.3f} for theta angle: {np.rad2deg(theta_p):.3f}"
     )
     return daily_energy_arr
 
@@ -174,7 +174,7 @@ elif time_interval == "day":
     period_seconds = 60
 
 # array of phi values including the max and min index
-phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 1)
+phi_panel = np.linspace(np.deg2rad(175), np.deg2rad(175), 1)
 # Array of theta values in radians from 0 to 90 degrees
 theta_panel = np.radians(np.arange(0, 91, 1))
 
@@ -219,7 +219,7 @@ def plot_energy_vs_theta(save: bool):
         "Energi (kWh)", fontsize=12, fontweight="bold"
     )  # Set the label for the y-axis
     plt.title(
-        "Effekt vs Theta Vinkel: 20 April", fontsize=14, fontweight="bold"
+        "Energiudbytte vs Theta Vinkel: 2024", fontsize=14, fontweight="bold"
     )  # Set the title of the plot
     plt.grid(
         True, which="both", linestyle="--", linewidth=0.5
@@ -228,11 +228,11 @@ def plot_energy_vs_theta(save: bool):
 
     # Show the plot
     if save:
-        plt.savefig("./img/energy_vs_theta_single-day.png", dpi=300)
+        plt.savefig("./img/energy_vs_theta_year_175.png", dpi=300)
     plt.show()
 
 
-plot_energy_vs_theta(save=False)
+plot_energy_vs_theta(save=True)
 
 # plot_energy_curve(energy_generation, save=True)
 
