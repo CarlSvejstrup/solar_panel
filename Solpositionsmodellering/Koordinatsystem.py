@@ -71,19 +71,6 @@ med numeriske fejl, bør det give array([7.07106781e-01, 6.12323400e-17, 0.0])).
 Forklar solpanelets orientering og solens placering i de tre situationer."""
 
 
-# def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
-#     inner = np.zeros(theta_sol.size)
-#     for i, (theta_s, phi_s, theta_p, phi_p) in enumerate(
-#         zip(theta_sol, phi_sol, theta_panel, phi_panel)
-#     ):
-#         temp = sp.sin(theta_p) * sp.sin(theta_s) * sp.cos(phi_p - phi_s) + sp.cos(
-#             theta_p
-#         ) * sp.cos(theta_s)
-#         if temp > 0:
-#             inner[i] = temp
-#     return inner
-
-
 def solar_panel_projection(theta_sol, phi_sol, theta_panel, phi_panel):
     inner = np.zeros(theta_sol.size)
     for i, (theta_s, phi_s, theta_p, phi_p) in enumerate(

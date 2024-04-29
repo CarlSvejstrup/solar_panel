@@ -174,7 +174,7 @@ elif time_interval == "day":
     period_seconds = 60
 
 # array of phi values including the max and min index
-phi_panel = np.linspace(np.deg2rad(175), np.deg2rad(175), 1)
+phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 1)
 # Array of theta values in radians from 0 to 90 degrees
 theta_panel = np.radians(np.arange(0, 91, 1))
 
@@ -201,10 +201,10 @@ def plot_energy_vs_theta(save: bool):
 
     # print(F_t)
     print(
-        f"Max value: {flux_total_arr[max_index]:.3f} kWh, at theta = {90 - np.rad2deg(theta_max)} degrees"
+        f"Max value: {flux_total_arr[max_index]:.3f} kWh, at theta = {np.rad2deg(theta_max)} degrees"
     )
     print(
-        f"Min value: {flux_total_arr[min_index]:.3f} kWh, at theta = {90 - np.rad2deg(theta_min)} degrees"
+        f"Min value: {flux_total_arr[min_index]:.3f} kWh, at theta = {np.rad2deg(theta_min)} degrees"
     )
 
     # Create the plot
@@ -228,7 +228,7 @@ def plot_energy_vs_theta(save: bool):
 
     # Show the plot
     if save:
-        plt.savefig("./img/energy_vs_theta_year_175.png", dpi=300)
+        plt.savefig("./img/energy_vs_theta_year.png", dpi=300)
     plt.show()
 
 
