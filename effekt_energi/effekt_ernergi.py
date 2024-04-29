@@ -16,7 +16,7 @@ def data_load(
         slut_dato = "2024-12-31"
         delta_tid = "h"
 
-    elif time_interval == "day":
+    elif time_interval == "==":
         start_dato = date
         slut_dato = date
         delta_tid = "min"
@@ -219,7 +219,7 @@ def plot_energy_vs_theta(save: bool):
         "Energi (kWh)", fontsize=12, fontweight="bold"
     )  # Set the label for the y-axis
     plt.title(
-        "Årlig Energi effekt vs Theta Vinkel", fontsize=14, fontweight="bold"
+        "Effekt vs Theta Vinkel: 20 April", fontsize=14, fontweight="bold"
     )  # Set the title of the plot
     plt.grid(
         True, which="both", linestyle="--", linewidth=0.5
@@ -228,11 +228,11 @@ def plot_energy_vs_theta(save: bool):
 
     # Show the plot
     if save:
-        plt.savefig("./img/energy_vs_theta_day.png", dpi=300)
+        plt.savefig("./img/energy_vs_theta_single-day.png", dpi=300)
     plt.show()
 
 
-plot_energy_vs_theta(save=True)
+plot_energy_vs_theta(save=False)
 
 # plot_energy_curve(energy_generation, save=True)
 
