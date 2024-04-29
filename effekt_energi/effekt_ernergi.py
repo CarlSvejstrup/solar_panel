@@ -13,8 +13,8 @@ def data_load(
 
     if time_interval == "year":
         start_dato = "2024-01-01"
-        slut_dato = "2024-01-31"
-        delta_tid = "min"
+        slut_dato = "2024-12-31"
+        delta_tid = "h"
 
     elif time_interval == "day":
         start_dato = date
@@ -49,13 +49,13 @@ def plot_energy_curve(energy_generation: np.ndarray, save: bool):
     plt.figure(figsize=(10, 6))  # Set the figure size
     plt.plot(energy_generation, color="navy", linewidth=2)  # Customized line
     plt.xlabel(
-        "Days after jan. 1 ", fontsize=12, fontweight="bold"
+        "Dage efter jan. 1 ", fontsize=12, fontweight="bold"
     )  # Set the label for the x-axis
     plt.ylabel(
         "Energi (kWh)", fontsize=12, fontweight="bold"
     )  # Set the label for the y-axis
     plt.title(
-        "Daglig energiudbytte for 2024", fontsize=14, fontweight="bold"
+        "Dagligt energiudbytte for 2024", fontsize=14, fontweight="bold"
     )  # Set the title of the plot
     plt.grid(
         True, which="both", linestyle="--", linewidth=0.5
@@ -145,9 +145,6 @@ def energy_per_day(
     print(
         f"Total energy generation: {np.sum(daily_energy_arr):.3f} for theta angle: {np.rad2deg(theta_p[0]):.3f}"
     )
-    # plot the energy generation curve
-    plt.plot(daily_energy_arr)
-    plt.show()
 
     return daily_energy_arr
 
@@ -214,28 +211,28 @@ sun_angles, time = data_load(
 if time_interval == "year":
     period_seconds = 3600
 elif time_interval == "day":
-    period_seconds = 3600
+    period_seconds = 60
 
 # array of phi values including the max and min index
-phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 1)
+phi_panel = np.linspace(np.deg2rad(185), np.deg2rad(185), 1)
 # Array of theta values in radians from 0 to 90 degrees
-theta_panel = np.radians(np.arange(51, 52, 1))
+theta_panel = np.radians(np.arange(0, 91, 1))
 
 # Defining the panel dimensions i meters
 Længde = 2.278  # længde på solpanel
 Bredde = 1.133  # bredde på solpanel
-panel_areal = 36
+panel_areal = Længde * Bredde  # Areal af solpanelsetup
 
 S_0 = 1_100  # Samlede stråling (irradians)
 A_0 = 0.5  # Atmotfæriske forstyrrelser
 W_p = 0.211  # Solpanelet effektivitets faktor
 
-energy_generation = energy_per_day(
-    sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
-)
+# energy_generation = energy_per_day(
+#     sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
+# )
 
 
-# plot_energy_vs_theta(save=True)
+plot_energy_vs_theta(save=True)
 
 # plot_energy_curve(energy_generation, save=True)
 
