@@ -2,27 +2,28 @@
 
 import numpy as np
 
-def bisect(t_min,t_max,f,delta):
-    t_mid = (t_min + t_max)/2
+def bisect(f,delta):
+    c_index = len(f)//2
 
-    if (t_max - t_min)/2 < delta:
-        return t_mid
+    if abs((f[0]+f[-1])/2) < delta:
+        return c_index
     
-    if f[t > t_min][0] * f[t > t_mid][0] <= 0:
-        return bisect(t_min,t_mid,f,delta)
+    if f[0] * f[-1] <= 0:
+        f = f[: c_index]
     else:
-        return bisect(t_mid,t_max,f,delta)
+        f = f[c_index :]
+    return bisect(f,delta)
 
-def find_arr_eq_zero(arr,t_min,t_max,delta):
+def find_roots(arr,delta):
     root_arr = []
-    tf_min = t[arr.argmin()]
-    root_arr.append(bisect(t_min,tf_min,arr,delta=delta))
-    root_arr.append(bisect(tf_min,t_max,arr,delta=delta))
+    split_index = arr.argmin()
+    f1 = arr[: split_index]
+    f2 = arr[split_index :]
+    root_arr.append(bisect(f1,delta=delta))
+    root_arr.append(bisect(f2,delta=delta)+split_index)
     return root_arr
 
 t = np.linspace(0, 2 * np.pi, 10000)
 f_arr = np.cos(t)
-t_min = np.min(t)
-t_max = np.max(t)
 
-find_arr_eq_zero(f_arr,t_min,t_max,delta=0.000001)
+print(find_roots(f_arr,delta=0.001))
