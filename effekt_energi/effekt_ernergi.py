@@ -3,7 +3,7 @@ from pvlib.location import Location
 import sympy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
-from Koordinatsystem import *
+from koordinatsystem import *
 from scipy import integrate
 
 hourly_consumption = np.array([
@@ -29,7 +29,7 @@ def data_load(
     elif time_interval == "day":
         start_dato = date
         slut_dato = date
-        delta_tid = "h"
+        delta_tid = "min"
 
     # Definition of Location object. Coordinates and elevation of Amager, Copenhagen (Denmark)
     site = Location(
@@ -52,6 +52,30 @@ def data_load(
     solpos_angles = np.deg2rad(solpos[["zenith", "azimuth"]].to_numpy())
 
     return solpos_angles, times
+
+
+def plot_energy_curve(energy_generation: np.ndarray, save: bool):
+    # Create the plot
+    plt.figure(figsize=(10, 6))  # Set the figure size
+    plt.plot(energy_generation, color="navy", linewidth=2)  # Customized line
+    plt.xlabel(
+        "Dage efter jan. 1 ", fontsize=12, fontweight="bold"
+    )  # Set the label for the x-axis
+    plt.ylabel(
+        "Energi (kWh)", fontsize=12, fontweight="bold"
+    )  # Set the label for the y-axis
+    plt.title(
+        "Dagligt energiudbytte for 2024", fontsize=14, fontweight="bold"
+    )  # Set the title of the plot
+    plt.grid(
+        True, which="both", linestyle="--", linewidth=0.5
+    )  # Enable grid with custom settings
+    plt.tight_layout()  # Adjust layout to not cut off any labels
+
+    # Show the plot
+    if save:
+        plt.savefig("./img/energy_generation_day.png", dpi=300)
+    plt.show()
 
 
 def flux(
@@ -79,15 +103,11 @@ def flux(
     normal_vector_projection = solar_panel_projection(
         angles_s[:, 0], angles_s[:, 1], theta_panel_full, phi_panel_full
     )
-    # print(f"{normal_vector_projection} \n")
-    # print(f"proj {normal_vector_projection}")
 
     # for i in range(m):
     # F[i] = sp.integrate((u_sp[i] * S_0), (u, a1, b1), (v, a2, b2))
     # Convert from W/m^2 to kW
     flux_solar = (normal_vector_projection * (S_0 * A_0) * W_p * Area) / 1_000
-    # print(f"flux {flux_solar}\n")
-    # print(flux_solar.shape[0])
     return flux_solar
 
 
@@ -98,8 +118,9 @@ def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
 
     # Loop over the theta_p (angles of panel) values
     for i in range(len(theta_p)):
+        print(f"Calculating for theta = {np.rad2deg(theta_p[i])}")
         # Calculate the flux for each angle
-        F = flux(angles, theta_p[i], phi_p[i], panel_area, S_0, A_0, W_p)
+        F = flux(angles, theta_p[i], phi_p, panel_area, S_0, A_0, W_p)
 
         # Store the flux values for each angle
         panel_effekt_vs_time[:, i] = F
@@ -111,33 +132,71 @@ def test(angles, phi_p, theta_p, panel_area, S_0, A_0, W_p, int_):
         else:
             # Dividing by number of hours in the period to get the KWh
             integral_values[i] = integrate.simpson(F, dx=int_) / 3600
-        # print(integral_values[i])
-
+            # print(integral_values[i])
+        print(integral_values[i])
     max_index = np.argmax(integral_values)
     min_index = np.argmin(integral_values)
     return integral_values, panel_effekt_vs_time[:, max_index], max_index, min_index
 
 
-def energy_per_day(angle_values, theta_p, phi_p, panel_area, S_0, A_0, W_p, int_):
+def energy_per_day(
+    angle_values: np.ndarray, theta_p, phi_p, panel_area, S_0, A_0, W_p, int_
+):
     # Loop over the theta_p (angles of panel) values
     daily_energy_arr = []
 
     F = flux(angle_values, theta_p[0], phi_p[0], panel_area, S_0, A_0, W_p)
-    F = np.array_split(F, 365)
-    # print(F[0])
+    F = np.array_split(F, 366)
 
     for j in range(len(F)):
         daily_energy = integrate.simpson(F[j], dx=int_) / 3600
         daily_energy_arr.append(daily_energy)
 
-    # plot the daily energy
-    plt.plot(daily_energy_arr)
-    plt.xlabel("Theta")
-    plt.ylabel("Energy (kWh)")
-    plt.title("Daily energy for different angles")
-    plt.show()
+    print(
+        f"Total energy generation: {np.sum(daily_energy_arr):.3f} for theta angle: {np.rad2deg(theta_p[0]):.3f}"
+    )
 
-    quit()
+    return daily_energy_arr
+
+
+def plot_energy_vs_theta(save: bool):
+    flux_total_arr, flux_vs_best_angle, max_index, min_index = test(
+        sun_angles, phi_panel, theta_panel, panel_areal, S_0, A_0, W_p, period_seconds
+    )
+    theta_max = theta_panel[max_index]
+    theta_min = theta_panel[min_index]
+
+    # print(F_t)
+    print(
+        f"Max value: {flux_total_arr[max_index]:.3f} kWh, at theta = {np.rad2deg(theta_max)} degrees"
+    )
+    print(
+        f"Min value: {flux_total_arr[min_index]:.3f} kWh, at theta = {np.rad2deg(theta_min)} degrees"
+    )
+
+    # Create the plot
+    plt.figure(figsize=(10, 6))  # Set the figure size
+    plt.plot(
+        np.rad2deg(theta_panel), flux_total_arr, color="navy", linewidth=2
+    )  # Customized line
+    plt.xlabel(
+        "Theta Vinkel ", fontsize=12, fontweight="bold"
+    )  # Set the label for the x-axis
+    plt.ylabel(
+        "Energi (kWh)", fontsize=12, fontweight="bold"
+    )  # Set the label for the y-axis
+    plt.title(
+        "Energiudbytte vs Theta Vinkel: 2024", fontsize=14, fontweight="bold"
+    )  # Set the title of the plot
+    plt.grid(
+        True, which="both", linestyle="--", linewidth=0.5
+    )  # Enable grid with custom settings
+    plt.tight_layout()  # Adjust layout to not cut off any labels
+
+    # Show the plot
+    if save:
+        plt.savefig("./img/energy_vs_theta_year.png", dpi=300)
+    plt.show()
 
 
 # Check if the simulation is yearly or hourly
@@ -160,59 +219,33 @@ sun_angles, time = data_load(
 
 # Integral period based on yearly or hourly simulation
 if time_interval == "year":
-    period_seconds = 3_600
+    period_seconds = 3600
 elif time_interval == "day":
     period_seconds = 60
 
 # array of phi values including the max and min index
-phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 91)
+phi_panel = np.linspace(np.deg2rad(185), np.deg2rad(185), 1)
 # Array of theta values in radians from 0 to 90 degrees
 theta_panel = np.radians(np.arange(0, 91, 1))
-
 
 # Defining the panel dimensions i meters
 Længde = 2.278  # længde på solpanel
 Bredde = 1.133  # bredde på solpanel
-panel_areal = Længde * Bredde
+panel_areal = Længde * Bredde  # Areal af solpanelsetup
 
 S_0 = 1_100  # Samlede stråling (irradians)
 A_0 = 0.5  # Atmotfæriske forstyrrelser
 W_p = 0.211  # Solpanelet effektivitets faktor
 
-# energy_per_day(
+# energy_generation = energy_per_day(
 #     sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
 # )
 
-flux_total_arr, flux_vs_best_angle, max_index, min_index = test(
-    sun_angles,
-    phi_panel,
-    theta_panel,
-    panel_areal,
-    S_0,
-    A_0,
-    W_p,
-    int_=period_seconds,
-)
+
+plot_energy_vs_theta(save=True)
+
+# plot_energy_curve(energy_generation, save=True)
 
 # Write the flux values for the best angle to a csv file
-flux_df = pd.DataFrame(flux_vs_best_angle, columns=["Flux"])
-flux_df.to_csv("flux_values.csv")
-
-# Plot the flux values for the best angle
-plt.plot(time, flux_vs_best_angle)
-plt.xlabel("Time")
-plt.ylabel("Flux (kWh)")
-plt.title("Flux values for the best angle")
-plt.show()
-
-
-theta_max = theta_panel[max_index]
-theta_min = theta_panel[min_index]
-
-# print(F_t)
-print(
-    f"Max value: {flux_total_arr[max_index]:.3f} kWh, at theta = {90 - np.rad2deg(theta_max)} degrees"
-)
-print(
-    f"Min value: {flux_total_arr[min_index]:.3f} kWh, at theta = {90 - np.rad2deg(theta_min)} degrees"
-)
+# flux_df = pd.DataFrame(flux_vs_best_angle, columns=["Flux"])
+# flux_df.to_csv("flux_values.csv")
