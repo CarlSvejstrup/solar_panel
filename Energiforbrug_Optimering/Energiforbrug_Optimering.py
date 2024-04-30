@@ -3,10 +3,11 @@ from pvlib.location import Location
 import sympy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
+import sys
+sys.path.append('C:/Users/oscar/OneDrive/School/DTU/Semester_1/Introduktion_til_Intelligente_Systemer/Exam Project/Github/solar_panel/Solpositionsmodellering')
 from Koordinatsystem import *
 from scipy import integrate
 import time as t
-
 
 # Data from https://www.dst.dk/Site/Dst/SingleFiles/GetArchiveFile.aspx?fi=formid&fo=elforbrug--pdf&ext={2}
 hourly_consumption = np.array([
@@ -16,7 +17,7 @@ hourly_consumption = np.array([
 
 # Data from https://www.energidataservice.dk/tso-electricity/Elspotprices
 # Read the hourly price data from CVS file to np array
-df = pd.read_csv('Elspotprices_2023_hourly.csv', header=None)
+df = pd.read_csv('C:/Users/oscar/OneDrive/School/DTU/Semester_1/Introduktion_til_Intelligente_Systemer/Exam Project/Github/solar_panel/Energiforbrug_Optimering/Elspotprices_2023_hourly.csv', header=None)
 hourly_price = df.iloc[:, 0].values
 
 # Percent fee for selling electricity back to the power grid
