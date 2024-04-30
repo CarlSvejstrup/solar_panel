@@ -14,7 +14,7 @@ def data_load(
     if time_interval == "year":
         start_dato = "2024-01-01"
         slut_dato = "2024-12-31"
-        delta_tid = "h"
+        delta_tid = "min"
 
     elif time_interval == "day":
         start_dato = date
@@ -64,7 +64,7 @@ def plot_energy_curve(energy_generation: np.ndarray, save: bool):
 
     # Show the plot
     if save:
-        plt.savefig("./img/energy_generation_day.png", dpi=300)
+        plt.savefig("./img/energy_generation_day_min.png", dpi=300)
     plt.show()
 
 
@@ -209,14 +209,14 @@ sun_angles, time = data_load(
 
 # Integral period based on yearly or hourly simulation
 if time_interval == "year":
-    period_seconds = 3600
+    period_seconds = 60
 elif time_interval == "day":
     period_seconds = 60
 
 # array of phi values including the max and min index
-phi_panel = np.linspace(np.deg2rad(185), np.deg2rad(185), 1)
+phi_panel = np.linspace(np.deg2rad(180), np.deg2rad(180), 1)
 # Array of theta values in radians from 0 to 90 degrees
-theta_panel = np.radians(np.arange(0, 91, 1))
+theta_panel = np.radians(np.arange(51, 52, 1))
 
 # Defining the panel dimensions i meters
 Længde = 2.278  # længde på solpanel
@@ -227,14 +227,21 @@ S_0 = 1_100  # Samlede stråling (irradians)
 A_0 = 0.5  # Atmotfæriske forstyrrelser
 W_p = 0.211  # Solpanelet effektivitets faktor
 
-# energy_generation = energy_per_day(
-#     sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
-# )
 
+# plot_energy_vs_theta(save=True)
 
-plot_energy_vs_theta(save=True)
+energy_generation = energy_per_day(
+    sun_angles, theta_panel, phi_panel, panel_areal, S_0, A_0, W_p, period_seconds
+)
 
-# plot_energy_curve(energy_generation, save=True)
+plot_energy_curve(energy_generation, save=True)
+
+# min_indx = np.argmin(energy_generation)
+# max_indx_100 = np.argmax(energy_generation[:175])
+# max_indx_250 = np.argmax(energy_generation[175:])
+# print(f"Minimum udbytte: {energy_generation[min_indx]} ved dag {min_indx}")
+# print(f"Max udbytte 100: {energy_generation[max_indx_100]} ved dag {max_indx_100}")
+# print(f"Max udbytte 250: {energy_generation[max_indx_250]} ved dag {max_indx_250}")
 
 # Write the flux values for the best angle to a csv file
 # flux_df = pd.DataFrame(flux_vs_best_angle, columns=["Flux"])
