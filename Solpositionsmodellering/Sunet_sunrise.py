@@ -1,5 +1,5 @@
 '''Question 4:
-    Find tidspunktet for solopgang og solnedgang på DTU den 10. april 2024.
+    Find tidspunktet for solopgang og solnedgang på DTU den 20. april 2024.
     Sammenlign med “kendte” værdier fx fra DMI. Hint: Hvis I ønsker præcise værdier
     skal I bruge apparent_elevation (apparent sun elevation accounting for atmospheric refraction)
     i stedet for elevation. I behøver ikke tage højde for jordens krumning.'''
