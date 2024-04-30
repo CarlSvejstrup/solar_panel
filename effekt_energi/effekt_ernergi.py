@@ -6,6 +6,16 @@ import pandas as pd
 from koordinatsystem import *
 from scipy import integrate
 
+hourly_consumption = np.array([
+    0.3, 0.25, 0.2, 0.2, 0.2, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
+    0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.8, 0.7, 0.6, 0.5, 0.4
+])
+
+hourly_price = np.array([
+    282.27, 259.43, 257.79, 254.89, 252.58, 274.53, 334.94, 394.46,
+    432.33, 392.75, 332.34, 285.32, 259.58, 256.75, 213.53, 232.35,
+    247.38, 340.75, 394.91, 418.27, 385.68, 338.52, 261.14, 249.76
+])
 
 def data_load(
     time_interval, latitude, longitude, tidszone, altitude, date="2024-04-20"
